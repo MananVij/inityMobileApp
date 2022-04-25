@@ -29,6 +29,8 @@ import Sms from './app/screens/Sms';
 import LogoutScreen from './app/screens/LogoutScreen';
 import New from './app/screens/New';
 import AddExpense from './app/screens/AddExpense';
+import NewScreen from './app/screens/NewScreen';
+
 // import Hello from "./app/screens/HelloScreen"
 
 // import {useEffect} from 'react';
@@ -57,19 +59,24 @@ const requestSMSPermission = async () => {
       },
     );
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('You can use the camera');
+      console.log('SMS Permission Granted');
     } else {
-      console.log('Camera permission denied');
+      console.log('SMS Permission denied');
     }
   } catch (err) {
     console.warn(err);
   }
 };
-
 export default function App() {
+
+  const pushNotification = (data) => {
+    return data;
+  }
+  
   console.log(requestSMSPermission());
   return (
-    <Sms></Sms>
+    <NewScreen pushNotification={pushNotification}></NewScreen>
+    // <Sms pushNotification={pushNotification}></Sms>
     // <NavigationContainer>
     //   <Stack.Navigator>
     //     {/* <Stack.Screen
@@ -132,3 +139,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+

@@ -7,38 +7,17 @@ import {
   StyleSheet,
   Text,
   View,
+  TouchableOpacity
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
 import SmsAndroid from 'react-native-get-sms-android';
 import {addDoc, collection} from 'firebase/firestore/lite';
-
+import New from './NewScreen';
 import {db} from '../../config/keys';
+import NewScreen from './NewScreen';
+// import this.notif.localNotif() from './NotifService';
 
-const requestCameraPermission = async () => {
-  try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.CAMERA,
-      // PermissionsAndroid.PERMISSIONS.READ_SMS,
-      {
-        title: 'Inity needs to read your SMS',
-        message: 'Inity needs to read your SMS ' + 'to track your expenses.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('SMS permission granted');
-    } else {
-      console.log('SMS permission denied');
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-};
-
-const App = () => {
-  // const UploadDocs = () => {
+const Sms = (props) => {
   useEffect(() => {
     const filter = {
       box: 'inbox',
@@ -52,10 +31,21 @@ const App = () => {
 
         if(((JSON.parse(smsList))[0].body).includes('debited')) {
           console.log((JSON.parse(smsList))[0].body)
+          props.pushNotif()
         }
       },
     );
   }, []);
+
+  return (
+    <View>
+    </View>
+  );
+};
+
+export default Sms;
+
+
   // useEffect(() => {
   //   const subscribe = SmsListener.addListener(item => {
   //     // console.log('sms is: ', item.body);
@@ -94,29 +84,3 @@ const App = () => {
   //   }
 
   // UploadDocs()
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.item}>Try permissions</Text>
-      <Button title="request permissions" onPress={requestCameraPermission} />
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingTop: StatusBar.currentHeight,
-    backgroundColor: '#ecf0f1',
-    padding: 8,
-  },
-  item: {
-    margin: 24,
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-});
-
-export default App;
