@@ -18,6 +18,8 @@ import Moment from 'react-moment';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import colors from '../config/colors';
 import moment from 'moment';
+import {async} from '@firebase/util';
+import Sms from './Sms';
 import {db, userId} from '../../config/keys';
 import {
   updateTotalExpense,
@@ -26,7 +28,7 @@ import {
 
 import {collection, addDoc} from 'firebase/firestore/lite';
 
-export default function AddExpense() {
+export default function AddExpense(props) {
   const categories = [
     'Grocery',
     'Education',
@@ -36,8 +38,6 @@ export default function AddExpense() {
     'Others',
   ];
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [dateSelected, setDateSelected] = useState('');
-  const [amount, setAmount] = useState();
   const [note, setNote] = useState();
   const [category, setCategory] = useState('');
 
@@ -60,32 +60,27 @@ export default function AddExpense() {
   };
 
   const UploadDocs = async () => {
-    if (!amount) {
-      Alert.alert('Please enter amount of expense.');
-    } else if (!dateSelected) {
-      Alert.alert('Please enter date of expense.');
+    if (!category) {
+      Alert.alert('Please select category of expense.');
     } else if (!note) {
       Alert.alert('Please add a note to your expense.');
-    } else if (!category) {
-      Alert.alert('Please select category of expense.');
     } else {
       try {
-        const docRef = await addDoc(collection(db, 'expenses'), {
+        const docRef = await addDoc(collection(db, 'expenses', userId), {
           userId: userId,
-          amount: amount,
-          date: dateSelected,
+          amount: props.amount,
+          date: props.date,
           category: category,
           type: note
         });
         console.log('Document written with ID: ', docRef.id);
-        updateTotalExpense(parseFloat(amount));
-        updateCategoryTotalExpense(parseFloat(amount), category);
+        updateTotalExpense(parseFloat(props.amount));
+        updateCategoryTotalExpense(parseFloat(props.amount), category);
       } catch (e) {
         console.log('error in uploading document: ', e);
       }
     }
   };
-
   return (
     <SafeAreaView
       style={{flex: 1, justifyContent: 'flex-start', alignItems: 'center'}}>
@@ -104,16 +99,18 @@ export default function AddExpense() {
       <Image
         source={require('../assets/peeps.png')}
         style={{width: '80%', height: '40%'}}></Image>
+
       <ScrollView bounces={false} style={{width: '100%'}}>
         <View style={{width: '90%', alignSelf: 'flex-start', marginLeft: 20}}>
           <TextInput
             style={styles.text}
             placeholder="Enter Amount"
+            autoFocus={true}
             placeholderTextColor={'black'}
             keyboardType="number-pad"
             step={0.1}
-            value={amount}
-            onChangeText={amount => setAmount(amount)}></TextInput>
+            value={props.amount}
+            editable={false}></TextInput>
 
           <SelectDropdown
             data={categories}
@@ -124,7 +121,7 @@ export default function AddExpense() {
               backgroundColor: colors.backgroundColor,
               height: 45,
               width: '100%',
-              marginBottom: '2%',
+              marginBottom: '2%'
             }}
             disableAutoScroll={false}
             dropdownStyle={{borderRadius: 10, elevation: 30}}
@@ -150,8 +147,8 @@ export default function AddExpense() {
             borderColor: colors.logoColor,
             borderWidth: 1,
             justifyContent: 'center',
-            // paddingHorizontal: 10,
-            marginBottom: 10,
+            paddingHorizontal: 10,
+            // marginVertical: 10,
             marginLeft: 20,
             borderRadius: 5,
           }}>
@@ -159,16 +156,14 @@ export default function AddExpense() {
             style={{
               justifyContent: 'space-between',
               flexDirection: 'row',
-              // marginVertical: 10,
             }}>
-            <Text style={{fontSize: 15, color: 'black', marginLeft: '2%'}}>
-              Select Date
-            </Text>
+            <Text style={{fontSize: 15, color: 'black'}}>Select Date</Text>
             <View style={{flexDirection: 'row'}}>
               <Text style={{fontSize: 16, marginRight: 10, color: 'black'}}>
-                {dateSelected}{' '}
+                {props.date}{' '}
               </Text>
               <TouchableOpacity
+                disabled={true}
                 style={{alignItems: 'center'}}
                 onPress={showDatePicker}>
                 <MaterialCommunityIcons name="calendar" size={25} />
@@ -182,6 +177,7 @@ export default function AddExpense() {
             </View>
           </View>
         </View>
+
         <View
           style={{
             flexDirection: 'row',
@@ -208,6 +204,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 3,
     marginBottom: '2%',
+    color: 'black',
   },
   button: {
     borderRadius: 12,

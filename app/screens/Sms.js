@@ -7,20 +7,26 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
 import SmsAndroid from 'react-native-get-sms-android';
 import {addDoc, collection} from 'firebase/firestore/lite';
+import moment from 'moment';
 import New from './NewScreen';
 import {db} from '../../config/keys';
 import NewScreen from './NewScreen';
-// import this.notif.localNotif() from './NotifService';
+import AddExpenseAuto from './AddExpenseAuto';
 
 const Sms = (props) => {
+  const [date, setDate] = useState('jb');
+  const [amount, setAmount] = useState('hb');
+  const sender = ['JD-HDFCBK', 'QP-HDFCBK', 'CP-HDFCBK'];
   useEffect(() => {
     const filter = {
       box: 'inbox',
+      // address: 'JD-HDFCBK'
+      address: 'JD-HDFCBK',
     };
     SmsAndroid.list(
       JSON.stringify(filter),
@@ -28,59 +34,22 @@ const Sms = (props) => {
         console.log('fail: ', fail);
       },
       (count, smsList) => {
-
-        if(((JSON.parse(smsList))[0].body).includes('debited')) {
-          console.log((JSON.parse(smsList))[0].body)
+        if (
+          (JSON.parse(smsList)[0].body.includes('debited') ||
+          JSON.parse(smsList)[0].body.includes('spent')) 
+          // && (JSON.parse(smsList)[0].body != undefined)
+        ) {
+          let amount = (JSON.parse(smsList))[0].body.match(new RegExp('Rs' + '\\s(\\w+)'))[1];
+          let date = moment(new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'})).format('YYYY-MM-DD')
           props.pushNotif()
+          setAmount(amount)
+          setDate(date)
         }
       },
     );
   }, []);
 
-  return (
-    <View>
-    </View>
-  );
+  return <AddExpenseAuto amount = {amount} date = {date}></AddExpenseAuto>;
 };
 
 export default Sms;
-
-
-  // useEffect(() => {
-  //   const subscribe = SmsListener.addListener(item => {
-  //     // console.log('sms is: ', item.body);
-  //   });
-
-  //   return () => subscribe.remove();
-  // }, []);
-
-  // };
-
-  // const NewDoc = async () => {
-  //   try {
-  //     const docRef = await addDoc(collection(db, 'cities'), {
-  //       city_name: "Delhi",
-  //       country: "India"
-  //     });
-  //     console.log('Document written with ID: ', docRef.id);
-
-  //   } catch (error) {
-  //     console.log("error: ", error);
-  //   }
-  // }
-
-  // NewDoc()
-  //     const UploadDocs = async () => {
-  //       try {
-  //         const docRef = await addDoc(collection(db, "cities"), {
-  //             city_name: "New Delhi",
-  //             country: "India"
-  //           });
-  //           console.log("Document written with ID: ", docRef.id);
-
-  //       } catch (error) {
-  //         console.log("error: ", error);
-  //       }
-  //   }
-
-  // UploadDocs()

@@ -33,7 +33,6 @@ function LoginScreen({navigation}) {
       signInWithEmailAndPassword(authentication, email, password)
         .then(res => {
           // setIsSignedIn(true);
-          console.log('res: ', res.user.email);
           navigation.replace("HomeScreen")
         })
         .catch(err => {

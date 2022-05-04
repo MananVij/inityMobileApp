@@ -8,16 +8,11 @@ import {
   Text,
   TouchableOpacity,
   Alert,
-  PermissionsAndroid
+  PermissionsAndroid,
 } from 'react-native';
 import colors from '../config/colors';
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
-import {authentication} from '../../config/keys';
-
-import { isSigned } from '../../App';
-// import { setIsSignedIn } from '../../App';
-// import { registration } from "../../API/firebaseMethods";
-
+import {authentication, createTotalExpenseDoc} from '../../config/keys';
 
 function LoginScreen({navigation}) {
   const [name, setName] = useState('');
@@ -28,12 +23,12 @@ function LoginScreen({navigation}) {
     createUserWithEmailAndPassword(authentication, email, password)
       .then(res => {
         authentication.currentUser.displayName = name;
-        console.log("User Created Successfully", authentication) ;
+        console.log('User Created Successfully', authentication);
+        createTotalExpenseDoc();
         updateProfile(authentication.currentUser, {displayName: name});
-        // setIsSignedIn(true);
       })
       .catch(err => {
-        console.log("error: ", err);
+        console.log('error: ', err);
       });
   };
 
@@ -46,10 +41,7 @@ function LoginScreen({navigation}) {
       Alert.alert('Password field is required.');
     } else {
       registerUser();
-      navigation.replace("HomeScreen")
-      // registration(email, password, lastName, firstName);
-      // navigation.navigate('Loading');
-      // emptyState();
+      navigation.replace('HomeScreen');
     }
   };
 

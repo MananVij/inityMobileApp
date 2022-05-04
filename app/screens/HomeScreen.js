@@ -12,10 +12,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import Feather from 'react-native-vector-icons/Feather';
 import {authentication} from '../../config/keys';
+import {getTwoDaysExpenses} from '../../API/firebaseMethods';
+import NewScreen from './NewScreen';
+
 
 import colors from '../config/colors';
 import {TouchableOpacity} from 'react-native';
@@ -23,7 +27,8 @@ import {TextInput} from 'react-native';
 import {FlatList, ScrollView} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import {StatusBar} from 'expo-status-bar';
-import {onAuthStateChanged} from 'firebase/auth';
+import {onAuthStateChanged, getAuth} from 'firebase/auth';
+import {async} from '@firebase/util';
 
 const data = {
   labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June'],
@@ -41,52 +46,33 @@ const data = {
   ],
 };
 
-const todayExpenses = [
-  {
-    id: '1',
-    icon: '',
-    amount: 100,
-    title: 'Chocolate',
-    type: 'Confectionery',
-    // date: "Today"
-  },
-  {
-    id: '2',
-    icon: '',
-    amount: 1200,
-    title: 'Nike Store',
-    type: 'Clothing',
-    // date: "Yesterday"
-  },
-];
-const yesterdfayExpenses = [
-  {
-    id: '2',
-    icon: '',
-    amount: 110,
-    title: 'Fruit Store',
-    type: 'Fruits',
-    // date: "Yesterday"
-  },
-  {
-    id: '3',
-    icon: '',
-    amount: 100,
-    title: 'Chocolate',
-    type: 'Confectionery',
-    // date: "Yesterday"
-  },
-  {
-    id: '4',
-    icon: '',
-    amount: 150,
-    title: 'Uber Cabs',
-    type: 'Transport',
-    // date: "Yesterday"
-  },
-];
+const getIcon = title => {
+  if (title == 'Party') {
+    return (
+      <MaterialCommunityIcons
+        name="party-popper"
+        size={34}></MaterialCommunityIcons>
+    );
+  } else if (title == 'Transportation') {
+    return <FontAwesome5 name="car" size={34}></FontAwesome5>;
+  } else if (title == 'Medicines') {
+    return <FontAwesome5 name="hospital" size={34}></FontAwesome5>;
+  } else if (title == 'Party') {
+    return (
+      <MaterialCommunityIcons
+        name="party-popper"
+        size={34}></MaterialCommunityIcons>
+    );
+  } else if (title == 'Education') {
+    return <FontAwesome name="book" size={34}></FontAwesome>;
+  } else if (title == 'Grocery') {
+    return <MaterialIcons name="local-grocery-store" size={34}></MaterialIcons>;
+  } else if (title == 'Others') {
+    return <Ionicons name="document" size={34}></Ionicons>;
+  }
+};
 
-const expenseComponent = (icon, amount, title, type) => {
+const expenseComponent = (amount, title, type) => {
   return (
     <View
       style={{
@@ -101,67 +87,28 @@ const expenseComponent = (icon, amount, title, type) => {
           width: 70,
           borderRadius: 25,
           backgroundColor: '#CAF0F8',
-        }}>
-        <Image source={icon} style={{}}></Image>
-      </View>
-
-      <View style={{marginLeft: 20}}>
-        <Text style={{fontWeight: '500', fontSize: 20, fontWeight: '600'}}>
-          {title}
-        </Text>
-        <Text style={{fontWeight: '500', fontSize: 15, fontWeight: '500'}}>
-          {type}
-        </Text>
-      </View>
-      <View style={{marginLeft: 100}}>
-        <Text style={{fontWeight: '500', fontSize: 20}}>{amount}</Text>
-      </View>
-    </View>
-  );
-};
-
-const Item = ({companyName, stockPrice, perChangeInDay, companyLogo}) => {
-  return (
-    <View
-      style={{
-        backgroundColor: colors.backgroundColor,
-        marginTop: 15,
-        height: 120,
-        // width: "65%",
-        shadowColor: '#000',
-        shadowOffset: {height: 0, width: 0},
-        shadowOpacity: 0.2,
-        borderRadius: 10,
-        marginRight: 10,
-        // marginRight: -50,
-        justifyContent: 'center',
-        elevation: 3,
-      }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: 15,
-          marginHorizontal: 10,
         }}>
-        <Image source={companyLogo} style={{width: 50, height: 50}}></Image>
-        <Text style={{fontSize: 16.5, fontWeight: 'bold'}}>{stockPrice}</Text>
+        {getIcon(title)}
       </View>
       <View
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: 15,
-          marginHorizontal: 10,
+          width: '80%',
         }}>
-        <Text style={{fontSize: 16.5, fontWeight: 'bold', marginRight: 15}}>
-          {companyName}
-        </Text>
-        <Text style={{fontSize: 16.5, fontWeight: 'bold'}}>
-          {perChangeInDay}
-        </Text>
+        <View style={{marginLeft: 20}}>
+          <Text style={{fontWeight: '500', fontSize: 20, fontWeight: '600'}}>
+            {title}
+          </Text>
+          <Text style={{fontWeight: '500', fontSize: 15, fontWeight: '500'}}>
+            {type}
+          </Text>
+        </View>
+        <View style={{marginLeft: 100}}>
+          <Text style={{fontWeight: '500', fontSize: 20}}>₹ {amount}</Text>
+        </View>
       </View>
     </View>
   );
@@ -169,14 +116,32 @@ const Item = ({companyName, stockPrice, perChangeInDay, companyLogo}) => {
 
 let change = data.datasets[0].data[4] > data.datasets[0].data[5];
 let chartColor = change ? colors.green : colors.red;
-let changeValue = data.datasets[0].data[5] - data.datasets[0].data[4];
 let changePercentage =
   ((data.datasets[0].data[5] - data.datasets[0].data[4]) /
     data.datasets[0].data[0]) *
   100;
-const indexGrowth = (Math.random() + 0.2).toFixed(2);
 
 export default function HomeScreen({navigation}) {
+  const [expenseData, setExpenseData] = useState([]);
+  const expensesOverview = async () => {
+    const hey = await getTwoDaysExpenses();
+    let count = 0;
+    const overview = hey.map(item => {
+      item.id = ++count;
+      return item;
+    });
+    setExpenseData(overview);
+    return expenseData;
+  };
+  useEffect(() => {
+    (async () => {
+      await expensesOverview();
+    })();
+  }, []);
+
+  const auth = getAuth();
+  const user = auth.currentUser;
+
   const [firstName, setFirstName] = useState('');
   onAuthStateChanged(authentication, user => {
     if (user) {
@@ -185,9 +150,6 @@ export default function HomeScreen({navigation}) {
   });
 
   const topBar = () => {
-    let nameOfUser;
-
-
     return (
       <View
         style={{
@@ -234,11 +196,10 @@ export default function HomeScreen({navigation}) {
             elevation: 3,
           }}>
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <TouchableOpacity 
-            onPress={() => {
-              navigation.navigate("ExpenseTrackingScreen")
-            }}
-            >
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('ExpenseTrackingScreen');
+              }}>
               <Text
                 style={{
                   marginTop: 17,
@@ -347,37 +308,10 @@ export default function HomeScreen({navigation}) {
           <TouchableOpacity
             style={{alignItems: 'center'}}
             onPress={() => {
-              navigation.navigate('AddExpense')
-            }}
-            >
-            <MaterialCommunityIcons
-              name="plus"
-              size={45}
-              color={colors.red}
-              // style={{ marginBottom: 5 }}
-            />
-            {/* <Text style={{ fontSize: 10 }}>Dashboard</Text> */}
+              navigation.navigate('AddExpense');
+            }}>
+            <MaterialCommunityIcons name="plus" size={45} color={colors.red} />
           </TouchableOpacity>
-          {/* <TouchableOpacity style={{ alignItems: "center" }}>
-            <MaterialCommunityIcons
-              name="rocket-launch"
-              size={30}
-              style={{ marginBottom: 5 }}
-            />
-            <Text style={{ fontSize: 10 }}>Track</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ alignItems: "center" }} onPress={ () => {
-            navigation.navigate("Sms")
-          }
-            
-          }>
-            <FontAwesome5
-              name="piggy-bank"
-              size={30}
-              style={{ marginBottom: 5 }}
-            />
-            <Text style={{ fontSize: 10 }}>Save Tax</Text>
-          </TouchableOpacity> */}
         </View>
       </View>
     );
@@ -511,103 +445,34 @@ export default function HomeScreen({navigation}) {
     );
   };
 
-  const renderItem = ({item}) => {
-    return (
-      <Item
-        companyName={item.companyName}
-        stockPrice={item.stockPrice}
-        companyLogo={item.companyLogo}
-        perChangeInDay={item.perChangeInDay}></Item>
-    );
-  };
-
-  const latestExpenses = () => {
-    return (
-      <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
-        <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            borderWidth: 1,
-          }}>
-          {/* <View style={{flexDirection: "column", justifyContent: "center"}}> */}
-          <View
-            style={{
-              height: 70,
-              width: 70,
-              borderRadius: 10,
-              backgroundColor: '#CAF0F8',
-            }}></View>
-          <Text style={{fontWeight: '500', fontSize: 20}}>skdjnckjsdncjk</Text>
-        </View>
-      </View>
-    );
-  };
-
-  const netWorthContainer = () => {
-    return (
-      <View style={{marginTop: 15, alignItems: 'center'}}>
-        <View
-          style={{
-            backgroundColor: '#f7f7f7',
-            width: '90%',
-            height: 60,
-            borderRadius: 20,
-            shadowColor: '#000',
-            shadowOffset: {height: 0, width: 0},
-            shadowOpacity: 0.2,
-            flexDirection: 'column',
-            justifyContent: 'center',
-            elevation: 3,
-          }}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <View style={{flexDirection: 'column', justifyContent: 'center'}}>
-              <Text style={{marginLeft: 20, fontSize: 20, fontWeight: '700'}}>
-                My Net Worth
-              </Text>
-            </View>
-            <View style={{marginRight: 20, alignSelf: 'flex-end'}}>
-              <Text
-                style={{fontSize: 19, fontWeight: 'bold', textAlign: 'right'}}>
-                ₹{(Math.random() * 10000).toFixed(2)} 💰
-              </Text>
-              {/* <Text style={{fontSize: 18, fontWeight: '600', textAlign: 'center'}}>10% <AntDesign name="caretup" color={colors.green} size={15}></AntDesign></Text> */}
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
   return (
     <SafeAreaView style={{flex: 1}}>
       <ScrollView bounces={false}>
-      <StatusBar backgroundColor={colors.greyColor}></StatusBar>
-      {topBar()}
+        <StatusBar backgroundColor={colors.greyColor}></StatusBar>
+        {topBar()}
         <View style={{paddingBottom: 80}}>
           {monthlyContainer()}
           {/* {netWorthContainer()} */}
           {goalSection()}
           <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
             <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
-            {todayExpenses.map(exp => {
+            {/* {expenseData[0].map(exp => {
               return (
                 <View style={{marginVertical: 10}}>
-                  {expenseComponent(exp.icon, exp.amount, exp.title, exp.type)}
+                  {expenseComponent(exp.amount, exp.category, exp.type)}
                 </View>
               );
-            })}
+            })} */}
           </View>
-          <View style={{marginLeft: 20, marginTop: 10, marginRight: 20}}>
+          <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
             <Text style={{fontWeight: '600', fontSize: 18}}>Yesterday</Text>
-            {yesterdfayExpenses.map(exp => {
+            {/* {expenseData[1].map(exp => {
               return (
                 <View style={{marginVertical: 10}}>
-                  {expenseComponent(exp.icon, exp.amount, exp.title, exp.type)}
+                  {expenseComponent(exp.amount, exp.category, exp.type)}
                 </View>
               );
-            })}
+            })} */}
           </View>
         </View>
       </ScrollView>

@@ -1,12 +1,5 @@
 import React, {Component} from 'react';
-import {
-  TextInput,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import {Alert} from 'react-native';
 import NotifService from './NotifService';
 import Sms from './Sms';
 export default class NewScreen extends Component {
@@ -21,14 +14,9 @@ export default class NewScreen extends Component {
     );
   }
 
-  hello = () => {
-    console.log('manan');
-  };
   pushNotif = () => {
     this.notif.localNotif();
   };
-
-
 
   onRegister(token) {
     this.setState({registerToken: token.token, fcmRegistered: true});
@@ -43,9 +31,6 @@ export default class NewScreen extends Component {
   }
 
   render() {
-    return (
-      <Sms pushNotif={this.pushNotif}></Sms>
-    );
+    return <Sms pushNotif={this.pushNotif}></Sms>;
   }
-
 }
