@@ -96,7 +96,7 @@ const ExpenseTrackingScreen = props => {
         setFlatListData(data[2]);
       })();
     }, []);
-    let colorScales = flatListData.map(item => item.color);
+    let colorScales = flatListData?.map(item => item.color);
     return (
       <View style={{alignItems: 'center'}}>
         <View style={{alignContent: 'center'}}>

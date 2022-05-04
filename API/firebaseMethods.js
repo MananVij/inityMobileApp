@@ -52,7 +52,7 @@ const previousTotal = async () => {
 export const updateTotalExpense = async newExpense => {
   const newTotalExpense = newExpense + (await previousTotal());
   const frankDocRef = doc(db, 'total_expense', userId);
-  console.log('frankDocRef', frankDocRef);
+  console.log('Total Expense Updated');
   try {
     await updateDoc(frankDocRef, {
       totalExpense: newTotalExpense,

@@ -27,8 +27,8 @@ function LoginScreen({navigation}) {
         createTotalExpenseDoc();
         updateProfile(authentication.currentUser, {displayName: name});
       })
-      .catch(err => {
-        console.log('error: ', err);
+      .catch(error => {
+        throw new Error(error);
       });
   };
 
@@ -40,8 +40,27 @@ function LoginScreen({navigation}) {
     } else if (!password) {
       Alert.alert('Password field is required.');
     } else {
-      registerUser();
-      navigation.replace('HomeScreen');
+      // registerUser();
+      createUserWithEmailAndPassword(authentication, email, password)
+        .then(res => {
+          authentication.currentUser.displayName = name;
+          console.log('User Created Successfully', authentication);
+          createTotalExpenseDoc();
+          updateProfile(authentication.currentUser, {displayName: name});
+          navigation.replace('HomeScreen');
+          console.log('in try');
+        })
+        .catch(error => {
+          console.log(error.code)          
+          if (error.code == 'auth/email-already-in-use') {
+            Alert.alert('The email address is already in use!');
+          } else if (error.code == 'auth/invalid-email') {
+            Alert.alert('The email address is invalid!');
+          } else {
+            console.log('error while creating user:', error);
+            Alert.alert('Something went wrong!');
+          }
+        });
     }
   };
 

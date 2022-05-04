@@ -20,7 +20,6 @@ import {authentication} from '../../config/keys';
 import {getTwoDaysExpenses} from '../../API/firebaseMethods';
 import NewScreen from './NewScreen';
 
-
 import colors from '../config/colors';
 import {TouchableOpacity} from 'react-native';
 import {TextInput} from 'react-native';
@@ -352,132 +351,39 @@ export default function HomeScreen({navigation}) {
     );
   };
 
-  const monthlyComparison = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          marginTop: 30,
-        }}>
-        <View
-          style={{
-            backgroundColor: '#f7f7f7',
-            width: '90%',
-            height: 230,
-            borderRadius: 20,
-            shadowColor: '#000',
-            shadowOffset: {height: 0, width: 0},
-            shadowOpacity: 0.2,
-            elevation: 3,
-          }}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <Text
-              style={{
-                marginTop: 17,
-                fontSize: 18,
-                fontWeight: 'bold',
-                marginLeft: 27,
-                marginBottom: 5,
-                color: colors.blue,
-              }}>
-              Your Portfolio{' '}
-              <FontAwesome name="chevron-right" color={colors.blue} size={13} />{' '}
-            </Text>
-            <Text
-              style={{
-                marginTop: 17,
-                fontSize: 18,
-                fontWeight: 'bold',
-                paddingRight: 27,
-                color: chartColor,
-              }}>
-              {Math.abs(profitPercentage).toFixed(2)}%
-            </Text>
+      <SafeAreaView style={{flex: 1}}>
+        <ScrollView bounces={false}>
+          <StatusBar backgroundColor={colors.greyColor}></StatusBar>
+          {topBar()}
+          <View style={{paddingBottom: 80}}>
+            {monthlyContainer()}
+            {goalSection()}
+            <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
+              <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
+              {expenseData[0]?.map(exp => {
+              return (
+                <View style={{marginVertical: 10}}>
+                  {expenseComponent(exp.amount, exp.category, exp.type)}
+                </View>
+              );
+            })}
+            </View>
+            <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
+              <Text style={{fontWeight: '600', fontSize: 18}}>Yesterday</Text>
+              {expenseData[1]?.map(exp => {
+              return (
+                <View style={{marginVertical: 10}}>
+                  {expenseComponent(exp.amount, exp.category, exp.type)}
+                </View>
+              );
+            })}
+            </View>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}></View>
-          <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-            <LineChart
-              data={data}
-              width={Dimensions.get('window').width} // from react-native
-              height={170}
-              // width={420}
-              yAxisLbel="₹"
-              yAxisSuffix="k"
-              withHorizontalLabels={false}
-              yAxisInterval={1} // optional, defaults to 1
-              chartConfig={{
-                //   backgroundGradientFrom: "rgba(0, 0, 0,0)",
-                backgroundGradientFromOpacity: 0,
-                backgroundGradientToOpacity: 0,
-                //   backgroundGradientTo: "#f7f7f7",
-                decimalPlaces: 2, // optional, defaults to 2dp
-                color: (opacity = 1) => `${chartColor}`,
-                //   color: (opacity = 1) => `rgba(119, 217, 112)`,
-                labelColor: (opacity = 1) => `rgba(17, 29, 94)`,
-                style: {
-                  borderRadius: 16,
-                  // marginRight: 3000,
-                },
-                propsForBackgroundLines: {
-                  strokeWidth: 0,
-                },
-                propsForDots: {
-                  r: '5',
-                  strokeWidth: '2',
-                  stroke: '#f7f7f7',
-                },
-              }}
-              bezier
-              style={{
-                //   marginVertical: 80,
-                borderRadius: 8,
-              }}
-            />
-          </View>
-        </View>
-      </View>
-      // </View>
+        </ScrollView>
+        {lastPart()}
+      </SafeAreaView>
     );
-  };
-
-  return (
-    <SafeAreaView style={{flex: 1}}>
-      <ScrollView bounces={false}>
-        <StatusBar backgroundColor={colors.greyColor}></StatusBar>
-        {topBar()}
-        <View style={{paddingBottom: 80}}>
-          {monthlyContainer()}
-          {/* {netWorthContainer()} */}
-          {goalSection()}
-          <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
-            <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
-            {/* {expenseData[0].map(exp => {
-              return (
-                <View style={{marginVertical: 10}}>
-                  {expenseComponent(exp.amount, exp.category, exp.type)}
-                </View>
-              );
-            })} */}
-          </View>
-          <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
-            <Text style={{fontWeight: '600', fontSize: 18}}>Yesterday</Text>
-            {/* {expenseData[1].map(exp => {
-              return (
-                <View style={{marginVertical: 10}}>
-                  {expenseComponent(exp.amount, exp.category, exp.type)}
-                </View>
-              );
-            })} */}
-          </View>
-        </View>
-      </ScrollView>
-      {lastPart()}
-    </SafeAreaView>
-  );
+  
 }
 const styles = StyleSheet.create({});

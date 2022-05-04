@@ -39,7 +39,6 @@ function LoginScreen({navigation}) {
           console.log('err: ', err);
         });
     }
-    // signIn(email, password);
     setEmail('');
     setPassword('');
   };
