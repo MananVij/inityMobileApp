@@ -5,7 +5,7 @@ import {
   Text,
   View,
   PermissionsAndroid,
-  AppState
+  AppState,
 } from 'react-native';
 import {AsyncStorage} from '@react-native-async-storage/async-storage';
 
@@ -81,6 +81,8 @@ export default function App() {
       console.log('AppState', appState.current);
       if (AppState.currentState === 'background') {
         console.log('app in back');
+      <NewScreen pushNotification={pushNotification} ></NewScreen>
+
         // console.log('count: ', ++count);
       }
     });
@@ -104,24 +106,24 @@ export default function App() {
     return (
       <NavigationContainer>
         <Stack.Navigator>
-          {/* <Stack.Screen
-          options={{headerShown: false}}
-          name="NewScreen"
-          component={NewScreen}
-          pushNotification={pushNotification}
-        /> */}
-
           <Stack.Screen
             options={{headerShown: false}}
             name="HomeScreen"
             component={HomeScreen}
           />
+
           <Stack.Screen
             options={{headerShown: false}}
             name="AddExpense"
             component={AddExpense}
           />
           <Stack.Screen
+            options={{headerShown: false}}
+            name="NewScreen"
+            component={NewScreen}
+            pushNotification={pushNotification}
+          />
+          {/* <Stack.Screen
             options={{headerShown: false}}
             name="Sms"
             component={Sms}
@@ -135,7 +137,7 @@ export default function App() {
             options={{headerShown: false}}
             name="ExpenseTrackingScreen"
             component={ExpenseTrackingScreen}
-          />
+          /> */}
         </Stack.Navigator>
       </NavigationContainer>
     );

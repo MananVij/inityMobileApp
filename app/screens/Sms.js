@@ -35,8 +35,8 @@ const Sms = (props) => {
       },
       (count, smsList) => {
         if (
-          (JSON.parse(smsList)[0].body.includes('debited') ||
-          JSON.parse(smsList)[0].body.includes('spent')) 
+          (JSON.parse(smsList)[0]?.body.includes('debited') ||
+          JSON.parse(smsList)[0]?.body.includes('spent')) 
           // && (JSON.parse(smsList)[0].body != undefined)
         ) {
           let amount = (JSON.parse(smsList))[0].body.match(new RegExp('Rs' + '\\s(\\w+)'))[1];
