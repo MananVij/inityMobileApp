@@ -54,7 +54,6 @@ export default function AddExpense() {
   };
 
   const handleConfirm = date => {
-    console.log('A date has been picked: ', moment(date).format('YYYY-MM-DD'));
     setDateSelected(moment(date).format('YYYY-MM-DD'));
     hideDatePicker();
   };

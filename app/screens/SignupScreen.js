@@ -49,7 +49,6 @@ function LoginScreen({navigation}) {
           createTotalExpenseDoc();
           updateProfile(authentication.currentUser, {displayName: name});
           navigation.replace('HomeScreen');
-          console.log('in try');
         })
         .catch(error => {
           console.log(error.code)          

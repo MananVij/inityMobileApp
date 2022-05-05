@@ -4,46 +4,27 @@ import {
   StyleSheet,
   Image,
   Dimensions,
-  ListView,
+  RefreshControl,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-// import {FontAwesome } from 'react-native-vector-icons/FontAwesome'
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
-import Feather from 'react-native-vector-icons/Feather';
 import {authentication} from '../../config/keys';
 import {getTwoDaysExpenses} from '../../API/firebaseMethods';
 import NewScreen from './NewScreen';
 
 import colors from '../config/colors';
 import {TouchableOpacity} from 'react-native';
-import {TextInput} from 'react-native';
-import {FlatList, ScrollView} from 'react-native';
+import {ScrollView} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import {StatusBar} from 'expo-status-bar';
 import {onAuthStateChanged, getAuth} from 'firebase/auth';
-import {async} from '@firebase/util';
 
-const data = {
-  labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June'],
-  datasets: [
-    {
-      data: [
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-      ],
-    },
-  ],
-};
+import {getUserTotalExpenses} from '../../API/firebaseMethods';
 
 const getIcon = title => {
   if (title == 'Party') {
@@ -113,31 +94,60 @@ const expenseComponent = (amount, title, type) => {
   );
 };
 
-let change = data.datasets[0].data[4] > data.datasets[0].data[5];
-let chartColor = change ? colors.green : colors.red;
-let changePercentage =
-  ((data.datasets[0].data[5] - data.datasets[0].data[4]) /
-    data.datasets[0].data[0]) *
-  100;
-
 export default function HomeScreen({navigation}) {
-  const [expenseData, setExpenseData] = useState([]);
-  // const expensesOverview = async () => {
-  //   const hey = await getTwoDaysExpenses();
-  //   let count = 0;
-  //   const overview = hey.map(item => {
-  //     item.id = ++count;
-  //     return item;
-  //   });
-  //   setExpenseData(overview);
-  //   return expenseData;
-  // };
-  // useEffect(() => {
-  //   (async () => {
-  //     await expensesOverview();
-  //   })();
-  // }, []);
 
+  const [totalExpense, setTotalExpense] = useState([]);
+  const [expenseData, setExpenseData] = useState([]);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const expensesOverview = async () => {
+    const hey = await getTwoDaysExpenses();
+    let count = 0;
+    const overview = hey.map(item => {
+      item.id = ++count;
+      return item;
+    });
+    setExpenseData(overview);
+    return expenseData;
+  };
+
+  useEffect(() => {
+    (async () => {
+      var data = await getUserTotalExpenses();
+      setTotalExpense(data[1]);
+    })();
+  }, []);
+  useEffect(() => {
+    (async () => {
+      await expensesOverview();
+    })();
+  }, []);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    return new Promise(resolve => {
+      setTimeout(() => {
+        expensesOverview();
+        setRefreshing(false);
+      }, 2000);
+    });
+  }, []);
+
+  const data = {
+    labels: ['Dec', 'Jan', 'Feb', 'March', 'April', 'May'],
+    datasets: [
+      {
+        data: [0, 0, 0, 0, 0, totalExpense],
+      },
+    ],
+  };
+
+  let change = data.datasets[0].data[4] > data.datasets[0].data[5];
+  let chartColor = change ? colors.green : colors.red;
+  let changePercentage =
+    ((data.datasets[0].data[5] - data.datasets[0].data[4]) /
+      data.datasets[0].data[0]) *
+    100;
   const auth = getAuth();
   const user = auth.currentUser;
 
@@ -351,39 +361,42 @@ export default function HomeScreen({navigation}) {
     );
   };
 
-    return (
-      <SafeAreaView style={{flex: 1}}>
-        <ScrollView bounces={false}>
-          <StatusBar backgroundColor={colors.greyColor}></StatusBar>
-          {topBar()}
-          <View style={{paddingBottom: 80}}>
-            {monthlyContainer()}
-            {goalSection()}
-            <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
-              <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
-              {/* {expenseData[0]?.map(exp => {
+  return (
+    <SafeAreaView style={{flex: 1}}>
+      <ScrollView
+        bounces={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        <StatusBar backgroundColor={colors.greyColor}></StatusBar>
+        {topBar()}
+        <View style={{paddingBottom: 80}}>
+          {monthlyContainer()}
+          {goalSection()}
+          <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
+            <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
+            {expenseData[0]?.map(exp => {
               return (
                 <View style={{marginVertical: 10}}>
                   {expenseComponent(exp.amount, exp.category, exp.type)}
                 </View>
               );
-            })} */}
-            </View>
-            <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
-              <Text style={{fontWeight: '600', fontSize: 18}}>Yesterday</Text>
-              {/* {expenseData[1]?.map(exp => {
-              return (
-                <View style={{marginVertical: 10}}>
-                  {expenseComponent(exp.amount, exp.category, exp.type)}
-                </View>
-              );
-            })} */}
-            </View>
+            })}
           </View>
-        </ScrollView>
-        {lastPart()}
-      </SafeAreaView>
-    );
-  
+          <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
+            <Text style={{fontWeight: '600', fontSize: 18}}>Yesterday</Text>
+            {expenseData[1]?.map(exp => {
+              return (
+                <View style={{marginVertical: 10}}>
+                  {expenseComponent(exp.amount, exp.category, exp.type)}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      </ScrollView>
+      {lastPart()}
+    </SafeAreaView>
+  );
 }
 const styles = StyleSheet.create({});

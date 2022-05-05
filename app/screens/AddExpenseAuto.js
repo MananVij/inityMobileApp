@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  BackHandler
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -31,6 +32,32 @@ import {collection, addDoc} from 'firebase/firestore/lite';
 
 export default function AddExpense(props) {
   // export default function AddExpense(props, setSms) {
+
+
+
+      useEffect(() => {
+        const backAction = () => {
+          Alert.alert("Hold on!", "Are you sure you want to go back?", [
+            {
+              text: "Cancel",
+              onPress: () => null,
+              style: "cancel"
+            },
+            { text: "YES", onPress: () => props.setSms(false)}
+          ]);
+          return true;
+        };
+    
+        const backHandler = BackHandler.addEventListener(
+          "hardwareBackPress",
+          backAction
+        );
+    
+        return () => backHandler.remove();
+      }, []);
+
+
+
   const categories = [
     'Grocery',
     'Education',
@@ -56,7 +83,6 @@ export default function AddExpense(props) {
   };
 
   const handleConfirm = date => {
-    console.log('A date has been picked: ', moment(date).format('YYYY-MM-DD'));
     setDateSelected(moment(date).format('YYYY-MM-DD'));
     hideDatePicker();
   };
@@ -68,7 +94,7 @@ export default function AddExpense(props) {
       Alert.alert('Please add a note to your expense.');
     } else {
       try {
-        const docRef = await addDoc(collection(db, 'expenses', userId), {
+        const docRef = await addDoc(collection(db, 'expenses'), {
           userId: userId,
           amount: props.amount,
           date: props.date,
@@ -130,7 +156,6 @@ export default function AddExpense(props) {
             buttonTextStyle={{fontSize: 16, textAlign: 'left', marginLeft: 0}}
             onSelect={selectedItem => {
               setCategory(selectedItem);
-              console.log(selectedItem);
             }}
           />
           <TextInput
@@ -192,11 +217,6 @@ export default function AddExpense(props) {
               <Text style={styles.buttonText}>Add Expense</Text>
             </View>
           </TouchableOpacity>
-          {/* <TouchableOpacity onPress={setSms(false)}>
-            <View style={styles.button}>
-              <Text style={styles.buttonText}>Home</Text>
-            </View>
-          </TouchableOpacity> */}
         </View>
       </ScrollView>
     </SafeAreaView>

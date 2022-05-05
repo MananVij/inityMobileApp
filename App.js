@@ -77,6 +77,7 @@ export default function App() {
       const filter = {
         box: 'inbox',
         address: 'QP-HDFCBK',
+        read: 0
       };
       SmsAndroid.list(
         JSON.stringify(filter),
@@ -94,13 +95,9 @@ export default function App() {
             let date = moment(
               new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
             ).format('YYYY-MM-DD');
-            // props.pushNotif()
-            console.log(amount)
             setSms(true)
             setAmount(amount);
             setDate(date);
-            return(
-             <NewScreen pushNotification={pushNotification} ></NewScreen>)
           }
         },
       );
@@ -162,8 +159,8 @@ export default function App() {
     }
     else {
       return (
-        <NewScreen pushNotification={pushNotification}></NewScreen>
-        // <NewScreen pushNotification={pushNotification} sms={setSms}></NewScreen>
+        // <NewScreen pushNotification={pushNotification}></NewScreen>
+        <NewScreen pushNotification={pushNotification} setSms={setSms}></NewScreen>
         )
     }
   } else {

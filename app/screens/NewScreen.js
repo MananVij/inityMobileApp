@@ -30,7 +30,7 @@ export default class NewScreen extends Component {
   }
 
   render() {
-    return <Sms pushNotif={this.pushNotif}></Sms>;
-    // return <Sms pushNotif={this.pushNotif} setSms={this.setSms}></Sms>;
+    // return <Sms pushNotif={this.pushNotif}></Sms>;
+    return <Sms pushNotif={this.pushNotif} setSms={this.props.setSms}></Sms>;
   }
 }

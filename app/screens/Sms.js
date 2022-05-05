@@ -25,7 +25,6 @@ const Sms = (props) => {
         ) {
           let amount = (JSON.parse(smsList))[0].body.match(new RegExp('Rs' + '\\s(\\w+)'))[1];
           let date = moment(new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'})).format('YYYY-MM-DD')
-          // console.log(amount, date)
           props.pushNotif()
           setAmount(amount)
           setDate(date)
@@ -34,7 +33,7 @@ const Sms = (props) => {
     );
   }, []);
 
-  return <AddExpenseAuto amount = {amount} date = {date}></AddExpenseAuto>;
+  return <AddExpenseAuto amount = {amount} date = {date} setSms = {props.setSms}></AddExpenseAuto>;
 };
 
 export default Sms;
