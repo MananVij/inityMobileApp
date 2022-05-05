@@ -106,6 +106,12 @@ export default function App() {
     return (
       <NavigationContainer>
         <Stack.Navigator>
+        {/* <Stack.Screen
+          options={{headerShown: false}}
+          name="NewScreen"
+          component={NewScreen}
+          pushNotification={pushNotification}
+        /> */}
           <Stack.Screen
             options={{headerShown: false}}
             name="HomeScreen"
@@ -119,12 +125,6 @@ export default function App() {
           />
           <Stack.Screen
             options={{headerShown: false}}
-            name="NewScreen"
-            component={NewScreen}
-            pushNotification={pushNotification}
-          />
-          {/* <Stack.Screen
-            options={{headerShown: false}}
             name="Sms"
             component={Sms}
           />
@@ -137,7 +137,7 @@ export default function App() {
             options={{headerShown: false}}
             name="ExpenseTrackingScreen"
             component={ExpenseTrackingScreen}
-          /> */}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     );
@@ -152,12 +152,12 @@ export default function App() {
             name="OnboardingScreen"
             component={OnboardingScreen}
           />
-          {/* <Stack.Screen
+          <Stack.Screen
           options={{headerShown: false}}
           name="NewScreen"
           component={NewScreen}
           pushNotification={pushNotification}
-        /> */}
+        />
           <Stack.Screen
             options={{headerShown: false}}
             name="SignupScreen"

@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import colors from '../config/colors';
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
-import {authentication, createTotalExpenseDoc} from '../../config/keys';
+import {authentication} from '../../config/keys';
+import {createTotalExpenseDoc} from '../../API/firebaseMethods'
 
 function LoginScreen({navigation}) {
   const [name, setName] = useState('');

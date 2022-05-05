@@ -89,23 +89,23 @@ export const updateCategoryTotalExpense = async (newExpense, category) => {
     newExpense + (await previousCategoryTotal(category));
   const frankDocRef = doc(db, 'total_expense', userId);
   try {
-    if (category == 'education') {
+    if (category == 'Education') {
       await updateDoc(frankDocRef, {
         education: newTotalCategoryExpense,
       });
-    } else if (category == 'grocery') {
+    } else if (category == 'Grocery') {
       await updateDoc(frankDocRef, {
         grocery: newTotalCategoryExpense,
       });
-    } else if (category == 'transportation') {
+    } else if (category == 'Transportation') {
       await updateDoc(frankDocRef, {
         transportation: newTotalCategoryExpense,
       });
-    } else if (category == 'party') {
+    } else if (category == 'Party') {
       await updateDoc(frankDocRef, {
         party: newTotalCategoryExpense,
       });
-    } else if (category == 'medicines') {
+    } else if (category == 'Medicines') {
       await updateDoc(frankDocRef, {
         medicines: newTotalCategoryExpense,
       });

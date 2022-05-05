@@ -129,7 +129,7 @@ const ExpenseTrackingScreen = props => {
         <View style={{marginHorizontal: '2%'}}>
           <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
             <Text style={{marginRight: '2%', fontSize: 17, fontWeight: '700'}}>Amount (₹)</Text>
-            <Text style={{marrginRight: '150%', fontSize: 17, fontWeight: '700'}}>Percentage</Text>
+            <Text style={{fontSize: 17, fontWeight: '700'}}>Percentage</Text>
           </View>
           <FlatList
             data={flatListData}
