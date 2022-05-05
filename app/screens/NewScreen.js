@@ -5,7 +5,6 @@ import Sms from './Sms';
 export default class NewScreen extends Component {
   constructor(props) {
     super(props);
-    console.log('in newscreen con');
     this.state = {};
 
     this.notif = new NotifService(
@@ -32,5 +31,6 @@ export default class NewScreen extends Component {
 
   render() {
     return <Sms pushNotif={this.pushNotif}></Sms>;
+    // return <Sms pushNotif={this.pushNotif} setSms={this.setSms}></Sms>;
   }
 }

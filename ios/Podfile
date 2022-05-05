@@ -23,6 +23,8 @@ target 'inity' do
 
   pod 'RNSVG', :path => '../node_modules/react-native-svg'
 
+  pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
+
   target 'inityTests' do
     inherit! :complete
     # Pods for testing

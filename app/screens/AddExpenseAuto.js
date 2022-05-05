@@ -27,8 +27,10 @@ import {
 } from '../../API/firebaseMethods';
 
 import {collection, addDoc} from 'firebase/firestore/lite';
+// import { setSms } from '../../App';
 
 export default function AddExpense(props) {
+  // export default function AddExpense(props, setSms) {
   const categories = [
     'Grocery',
     'Education',
@@ -190,6 +192,11 @@ export default function AddExpense(props) {
               <Text style={styles.buttonText}>Add Expense</Text>
             </View>
           </TouchableOpacity>
+          {/* <TouchableOpacity onPress={setSms(false)}>
+            <View style={styles.button}>
+              <Text style={styles.buttonText}>Home</Text>
+            </View>
+          </TouchableOpacity> */}
         </View>
       </ScrollView>
     </SafeAreaView>

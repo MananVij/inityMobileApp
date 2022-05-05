@@ -122,21 +122,21 @@ let changePercentage =
 
 export default function HomeScreen({navigation}) {
   const [expenseData, setExpenseData] = useState([]);
-  const expensesOverview = async () => {
-    const hey = await getTwoDaysExpenses();
-    let count = 0;
-    const overview = hey.map(item => {
-      item.id = ++count;
-      return item;
-    });
-    setExpenseData(overview);
-    return expenseData;
-  };
-  useEffect(() => {
-    (async () => {
-      await expensesOverview();
-    })();
-  }, []);
+  // const expensesOverview = async () => {
+  //   const hey = await getTwoDaysExpenses();
+  //   let count = 0;
+  //   const overview = hey.map(item => {
+  //     item.id = ++count;
+  //     return item;
+  //   });
+  //   setExpenseData(overview);
+  //   return expenseData;
+  // };
+  // useEffect(() => {
+  //   (async () => {
+  //     await expensesOverview();
+  //   })();
+  // }, []);
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -361,23 +361,23 @@ export default function HomeScreen({navigation}) {
             {goalSection()}
             <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
               <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
-              {expenseData[0]?.map(exp => {
+              {/* {expenseData[0]?.map(exp => {
               return (
                 <View style={{marginVertical: 10}}>
                   {expenseComponent(exp.amount, exp.category, exp.type)}
                 </View>
               );
-            })}
+            })} */}
             </View>
             <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
               <Text style={{fontWeight: '600', fontSize: 18}}>Yesterday</Text>
-              {expenseData[1]?.map(exp => {
+              {/* {expenseData[1]?.map(exp => {
               return (
                 <View style={{marginVertical: 10}}>
                   {expenseComponent(exp.amount, exp.category, exp.type)}
                 </View>
               );
-            })}
+            })} */}
             </View>
           </View>
         </ScrollView>

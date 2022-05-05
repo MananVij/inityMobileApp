@@ -9,32 +9,28 @@ import {
 } from 'react-native';
 import {AsyncStorage} from '@react-native-async-storage/async-storage';
 
+import BackgroundTimer from 'react-native-background-timer';
+import SmsAndroid from 'react-native-get-sms-android';
+import moment from 'moment';
+
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {authentication} from './config/keys';
-// import firebase from 'firebase/app';
-// import apiKeys from "./config/keys";
-// import {onAuthStateChanged} from './config/keys';
-// import { authentication } from './config/keys';
+
 // screens
 import SignupScreen from './app/screens/SignupScreen';
 import LoginScreen from './app/screens/LoginScreen';
 import OnboardingScreen from './app/screens/OnboardingScreen';
-import SelectAvatar from './app/screens/SelectAvatar';
-import TaxSaving from './app/screens/TaxSaving';
 import HomeScreen from './app/screens/HomeScreen';
-import SplashScreen from './app/screens/SplashScreen';
 import ExpenseTrackingScreen from './app/screens/ExpenseTrackingScreen';
 import Sms from './app/screens/Sms';
 import LogoutScreen from './app/screens/LogoutScreen';
-import New from './app/screens/New';
 import AddExpense from './app/screens/AddExpense';
 import NewScreen from './app/screens/NewScreen';
 import {onAuthStateChanged} from 'firebase/auth';
+import AddExpenseAuto from './app/screens/AddExpenseAuto';
+import SmsListener from 'react-native-android-sms-listener';
 
-export function isSigned() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
-}
 
 const requestSMSPermission = async () => {
   try {
@@ -59,37 +55,56 @@ const requestSMSPermission = async () => {
     console.warn(err);
   }
 };
+
 export default function App() {
+
+
+  SmsListener.addListener(message => {
+    console.info(message, 'manan here')
+  })
+
+
   const pushNotification = data => {
     return data;
   };
-
-  const appState = useRef(AppState.currentState);
-  const [appStateVisible, setAppStateVisible] = useState(appState.current);
+  
+  const [sms, setSms] = useState(false)
+  const [date, setDate] = useState('');
+  const [amount, setAmount] = useState('');
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        console.log('App has come to the foreground!');
-      }
-
-      appState.current = nextAppState;
-      setAppStateVisible(appState.current);
-      console.log('AppState', appState.current);
-      if (AppState.currentState === 'background') {
-        console.log('app in back');
-      <NewScreen pushNotification={pushNotification} ></NewScreen>
-
-        // console.log('count: ', ++count);
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
+    BackgroundTimer.runBackgroundTimer(() => {
+      const filter = {
+        box: 'inbox',
+        address: 'QP-HDFCBK',
+      };
+      SmsAndroid.list(
+        JSON.stringify(filter),
+        fail => {
+          console.log('fail: ', fail);
+        },
+        (count, smsList) => {
+          if (
+            JSON.parse(smsList)[0]?.body.includes('debited') ||
+            JSON.parse(smsList)[0]?.body.includes('spent')
+          ) {
+            let amount = JSON.parse(smsList)[0].body.match(
+              new RegExp('Rs' + '\\s(\\w+)'),
+            )[1];
+            let date = moment(
+              new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
+            ).format('YYYY-MM-DD');
+            // props.pushNotif()
+            console.log(amount)
+            setSms(true)
+            setAmount(amount);
+            setDate(date);
+            return(
+             <NewScreen pushNotification={pushNotification} ></NewScreen>)
+          }
+        },
+      );
+    }, 5000);
   }, []);
 
   const [user, setUser] = useState();
@@ -101,46 +116,56 @@ export default function App() {
       if (initializing) setInitializing(false);
     }
   });
-
+  useEffect(() => {
+    requestSMSPermission();
+  }, []);
   if (user) {
-    return (
-      <NavigationContainer>
-        <Stack.Navigator>
-        {/* <Stack.Screen
-          options={{headerShown: false}}
-          name="NewScreen"
-          component={NewScreen}
-          pushNotification={pushNotification}
-        /> */}
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="HomeScreen"
-            component={HomeScreen}
-          />
-
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="AddExpense"
-            component={AddExpense}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Sms"
-            component={Sms}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="LogoutScreen"
-            component={LogoutScreen}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="ExpenseTrackingScreen"
-            component={ExpenseTrackingScreen}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
+    if(!sms) {
+      return (
+        <NavigationContainer>
+          <Stack.Navigator>
+            {/* <Stack.Screen
+              options={{headerShown: false}}
+              name="NewScreen"
+              component={NewScreen}
+              // pushNotification={pushNotification}
+            /> */}
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="HomeScreen"
+              component={HomeScreen}
+            />
+  
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="AddExpense"
+              component={AddExpense}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Sms"
+              component={Sms}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="LogoutScreen"
+              component={LogoutScreen}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="ExpenseTrackingScreen"
+              component={ExpenseTrackingScreen}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      );
+    }
+    else {
+      return (
+        <NewScreen pushNotification={pushNotification}></NewScreen>
+        // <NewScreen pushNotification={pushNotification} sms={setSms}></NewScreen>
+        )
+    }
   } else {
     return (
       // <NewScreen pushNotification={pushNotification} ></NewScreen>
@@ -152,12 +177,12 @@ export default function App() {
             name="OnboardingScreen"
             component={OnboardingScreen}
           />
-          <Stack.Screen
+          {/* <Stack.Screen
           options={{headerShown: false}}
           name="NewScreen"
           component={NewScreen}
           pushNotification={pushNotification}
-        />
+        /> */}
           <Stack.Screen
             options={{headerShown: false}}
             name="SignupScreen"
