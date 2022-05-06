@@ -30,25 +30,34 @@ const getIcon = title => {
   if (title == 'Party') {
     return (
       <MaterialCommunityIcons
+        color={'#035397'}
         name="party-popper"
         size={34}></MaterialCommunityIcons>
     );
   } else if (title == 'Transportation') {
-    return <FontAwesome5 name="car" size={34}></FontAwesome5>;
+    return <FontAwesome5 color={'#035397'} name="car" size={34}></FontAwesome5>;
   } else if (title == 'Medicines') {
-    return <FontAwesome5 name="hospital" size={34}></FontAwesome5>;
+    return (
+      <FontAwesome5 color={'#035397'} name="hospital" size={34}></FontAwesome5>
+    );
   } else if (title == 'Party') {
     return (
       <MaterialCommunityIcons
+        color={'#035397'}
         name="party-popper"
         size={34}></MaterialCommunityIcons>
     );
   } else if (title == 'Education') {
-    return <FontAwesome name="book" size={34}></FontAwesome>;
+    return <FontAwesome color={'#035397'} name="book" size={34}></FontAwesome>;
   } else if (title == 'Grocery') {
-    return <MaterialIcons name="local-grocery-store" size={34}></MaterialIcons>;
+    return (
+      <MaterialIcons
+        color={'#035397'}
+        name="local-grocery-store"
+        size={34}></MaterialIcons>
+    );
   } else if (title == 'Others') {
-    return <Ionicons name="document" size={34}></Ionicons>;
+    return <Ionicons color={'#035397'} name="document" size={34}></Ionicons>;
   }
 };
 
@@ -79,23 +88,20 @@ const expenseComponent = (amount, title, type) => {
           width: '80%',
         }}>
         <View style={{marginLeft: 20}}>
-          <Text style={{fontWeight: '500', fontSize: 20, fontWeight: '600'}}>
+          <Text style={{fontWeight: '500', fontSize: 19, fontWeight: '600'}}>
             {title}
           </Text>
           <Text style={{fontWeight: '500', fontSize: 15, fontWeight: '500'}}>
             {type}
           </Text>
         </View>
-        <View style={{marginLeft: 100}}>
-          <Text style={{fontWeight: '500', fontSize: 20}}>₹ {amount}</Text>
-        </View>
+        <Text style={{fontWeight: '500', fontSize: 19, marginRight: '5%'}}>₹ {amount}</Text>
       </View>
     </View>
   );
 };
 
 export default function HomeScreen({navigation}) {
-
   const [totalExpense, setTotalExpense] = useState([]);
   const [expenseData, setExpenseData] = useState([]);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -301,7 +307,7 @@ export default function HomeScreen({navigation}) {
         }}>
         <View
           style={{
-            backgroundColor: colors.backgroundColor,
+            backgroundColor: colors.red,
             width: 70,
             height: 70,
             borderRadius: 100,
@@ -319,7 +325,11 @@ export default function HomeScreen({navigation}) {
             onPress={() => {
               navigation.navigate('AddExpense');
             }}>
-            <MaterialCommunityIcons name="plus" size={45} color={colors.red} />
+            <MaterialCommunityIcons
+              name="plus"
+              size={45}
+              color={colors.backgroundColor}
+            />
           </TouchableOpacity>
         </View>
       </View>

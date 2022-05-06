@@ -7,11 +7,12 @@ import AddExpenseAuto from './AddExpenseAuto';
 const Sms = (props) => {
   const [date, setDate] = useState('');
   const [amount, setAmount] = useState('');
-  const sender = ['JD-HDFCBK', 'QP-HDFCBK', 'CP-HDFCBK'];
+  const sender = ['JD-HDFCBK', 'JD-HDFCBK', 'CP-HDFCBK'];
   useEffect(() => {
     const filter = {
       box: 'inbox',
-      address: 'QP-HDFCBK',
+      address: 'JD-HDFCBK',
+      read: 0
     };
     SmsAndroid.list(
       JSON.stringify(filter),

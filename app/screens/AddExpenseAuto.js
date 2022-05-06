@@ -121,7 +121,7 @@ export default function AddExpense(props) {
             marginTop: '10%',
             marginBottom: '8%',
           }}>
-          Add Expenses Manually
+          Add Online Expense
         </Text>
       </View>
       <Image

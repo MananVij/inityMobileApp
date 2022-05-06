@@ -76,7 +76,7 @@ export default function App() {
     BackgroundTimer.runBackgroundTimer(() => {
       const filter = {
         box: 'inbox',
-        address: 'QP-HDFCBK',
+        address: 'JD-HDFCBK',
         read: 0
       };
       SmsAndroid.list(
@@ -96,6 +96,7 @@ export default function App() {
               new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
             ).format('YYYY-MM-DD');
             setSms(true)
+            console.log(amount)
             setAmount(amount);
             setDate(date);
           }
