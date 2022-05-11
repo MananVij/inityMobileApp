@@ -28,13 +28,8 @@ import {
 } from '../../API/firebaseMethods';
 
 import {collection, addDoc} from 'firebase/firestore/lite';
-// import { setSms } from '../../App';
 
 export default function AddExpense(props) {
-  // export default function AddExpense(props, setSms) {
-
-
-
       useEffect(() => {
         const backAction = () => {
           Alert.alert("Hold on!", "Are you sure you want to go back?", [

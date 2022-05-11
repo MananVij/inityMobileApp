@@ -11,14 +11,7 @@ import {
 } from 'react-native';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {authentication} from '../../config/keys';
-// import {signIn} from '../../API/firebaseMethods';
 import colors from '../config/colors';
-
-// import { setIsSignedIn } from '../../App';
-
-
-
-
 
 function LoginScreen({navigation}) {
   const [email, setEmail] = useState('');
@@ -79,7 +72,6 @@ function LoginScreen({navigation}) {
             SignUp
           </Text>
         </Text>
-        {/* <Text style={styles.signupText}>SignUp</Text> */}
       </View>
     </View>
   );

@@ -76,8 +76,8 @@ export default function App() {
     BackgroundTimer.runBackgroundTimer(() => {
       const filter = {
         box: 'inbox',
-        address: 'JD-HDFCBK',
-        read: 0
+        address: new RegExp('\w*BK\b'), 
+        read: 0,
       };
       SmsAndroid.list(
         JSON.stringify(filter),

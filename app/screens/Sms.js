@@ -11,7 +11,8 @@ const Sms = (props) => {
   useEffect(() => {
     const filter = {
       box: 'inbox',
-      address: 'JD-HDFCBK',
+      address: new RegExp('\w*BK\b'), 
+
       read: 0
     };
     SmsAndroid.list(
