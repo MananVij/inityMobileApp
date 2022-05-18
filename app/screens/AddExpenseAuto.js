@@ -120,7 +120,7 @@ export default function AddExpense(props) {
         </Text>
       </View>
       <Image
-        source={require('../assets/peeps.png')}
+        source={require('../../assets/icons/peeps.png')}
         style={{width: '80%', height: '40%'}}></Image>
 
       <ScrollView bounces={false} style={{width: '100%'}}>

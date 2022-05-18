@@ -185,7 +185,7 @@ export default function HomeScreen({navigation}) {
           }}>
           <Image
             style={{resizeMode: 'contain', width: 50, height: 50}}
-            source={require('../assets/avatar/business.png')}></Image>
+            source={require('../../assets/avatar/business.png')}></Image>
         </TouchableOpacity>
       </View>
     );

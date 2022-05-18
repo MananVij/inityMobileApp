@@ -14,22 +14,10 @@ import SignUp from './SignupScreen';
 import LoginScreen from './LoginScreen';
 function SplashScreen({ navigation }) {
 
-//   useEffect(
-//     () => {
-//      firebase.auth().onAuthStateChanged((user) => {
-//        if (user) {
-//          navigation.replace('HomeScreen');
-//        } else {
-//          navigation.replace('LoginScreen');
-//        }
-//      });
-//    }
-//  );
-
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        <Image source={require("../assets/logo.png")} style={styles.logo} />
+        <Image source={require("../../assets/logo.png")} style={styles.logo} />
       </View>
     </View>
   );
