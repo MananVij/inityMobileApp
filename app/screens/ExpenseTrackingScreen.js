@@ -1,35 +1,101 @@
-import React, {Component, useRef, useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import {
   View,
   StyleSheet,
   SafeAreaView,
-  Image,
-  Text,
   FlatList,
-  SectionList,
   TouchableOpacity,
   ScrollView,
   Animated,
 } from 'react-native';
 import {collection, getDocs} from 'firebase/firestore/lite';
 import {userId, db} from '../../config/keys';
-import {getUserTotalExpenses} from '../../API/firebaseMethods';
+import distinctColors from 'distinct-colors';
+import rgbHex from 'rgb-hex';
+
+import {Text} from 'react-native-paper';
 
 import {VictoryPie} from 'victory-native';
-// import { Icon } from "react-native-vector-icons/FontAwesome5";
 import colors from '../config/colors';
+import {useRoute} from '@react-navigation/native';
+
 
 // Data used to make the animate prop work
 const ExpenseTrackingScreen = props => {
+  const route = useRoute();
+
+  const d = new Date();
+  const monthNames = [
+    'jan',
+    'feb',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'aug',
+    'sept',
+    'oct',
+    'nov',
+    'dec',
+  ];
+  const [totalExpense, setTotalExpense] = useState([]);
+  const [categoryExpenses, setCategoryExpense] = useState();
+  const [pieChartData, setPieChartData] = useState({x: 0, y: 1000});
+
+  var palette = distinctColors({
+    count: Object.entries(route?.params.userData[0].categories).length,
+    hueMin: 50,
+    hueMax: 250,
+    chromaMin: 40, 
+    chromaMax: 150
+  });
+  var colorPallete = [];
+  palette.map(el => {
+    colorPallete.push('#' + String(rgbHex(el._rgb[0], el._rgb[1], el._rgb[2])));
+  });
+
+  useEffect(() => {
+    let arr = [];
+    let arr2 = [];
+    let ans = [];
+
+    monthlyDataExpanded.map(el => {
+      el.map(ele => {
+        if (!arr?.includes(ele?.category)) arr.push(ele.category);
+        arr2.push({[ele.category]: ele.amount});
+      });
+    });
+
+    arr.map(el => {
+      let sum = 0;
+      arr2.map(ele => {
+        if (el == Object.keys(ele)) {
+          sum = sum + Number(Object.values(ele));
+        }
+      });
+      ans.push({[el]: sum});
+    });
+    setCategoryExpense(ans);
+
+    let pie = [];
+    ans.map(el => {
+      pie.push({x: Object.keys(el), y: Number(Object.values(el))});
+    });
+    setPieChartData(pie);
+  }, []);
+
+  useEffect(() => {
+    setTotalExpense(
+      route?.params.userData[0].monthlyExpense[monthNames[d.getMonth()]],
+    );
+  }, []);
+
   const topBar = () => {
     return (
       <View style={styles.topContainer}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <Text style={styles.topBarText}>My Expenses</Text>
-            {/* <Text style={(styles.topBarText, {fontSize: 20})}>January</Text>
-            <Image
-              source={require('../assets/icons/drop-down.png')}
-              style={styles.dorpdownIcon}></Image> */}
         </View>
       </View>
     );
@@ -58,25 +124,25 @@ const ExpenseTrackingScreen = props => {
             style={{flexDirection: 'row', width: '50%', alignItems: 'center'}}>
             <View
               style={{
-                backgroundColor: item.color,
-                width: 17,
-                height: 17,
-                borderRadius: 2,
-                marginLeft: 10,
+                backgroundColor: colorPallete,
+                width: 18,
+                height: 18,
+                borderRadius: 6,
+                marginRight: '5%',
               }}
             />
-            <Text style={{fontWeight: 'bold', fontSize: 20, marginLeft: 15}}>
-              {(item.title).charAt(0).toUpperCase() + (item.title).slice(1)}
+            <Text style={{fontWeight: 'bold', fontSize: 20}}>
+              {Object.keys(item)}
             </Text>
           </View>
           <View>
-            <Text style={{fontWeight: '500', fontSize: 20, marginRight: 10}}>
-              {item.expense}
+            <Text style={{fontWeight: '500', fontSize: 20}}>
+              {Object.values(item)}
             </Text>
           </View>
           <View>
-            <Text style={{fontWeight: '500', fontSize: 20, marginRight: 10}}>
-              {item.expensePer}
+            <Text style={{fontWeight: '500', fontSize: 20, paddingLeft: '18%'}}>
+              {((Object.values(item) / totalExpense) * 100).toPrecision(2)}
             </Text>
           </View>
         </View>
@@ -84,27 +150,34 @@ const ExpenseTrackingScreen = props => {
     );
   };
 
+  var date = new Date().getMonth();
+  let monthlyDataExpanded = Object.values(
+    route?.params.userData[0].expenses,
+  ).filter(el => {
+    return el[0].date.split('-')[1] - 1 == date;
+  });
+
   const pieChart = () => {
-    const [pieChartData, setPieChartData] = useState(Number);
-    const [flatListData, setFlatListData] = useState([]);
-    const [totalExpense, setTotalExpense] = useState([]);
-    useEffect(() => {
-      (async () => {
-        var data = await getUserTotalExpenses();
-        setPieChartData(data[0]);
-        setTotalExpense(data[1]);
-        setFlatListData(data[2]);
-      })();
-    }, []);
-    let colorScales = flatListData?.map(item => item.color);
     return (
       <View style={{alignItems: 'center'}}>
         <View style={{alignContent: 'center'}}>
           <VictoryPie
-            animate={{easing: 'exp'}}
+            animate={{
+              // easing: 'exp', 
+              // onLoad: {
+              //   sta
+              // },
+            duration: 1000,
+            
+          }}
+          
+            padAngle={2}
+            startAngle={90}
+            endAngle={450}
             data={pieChartData}
-            colorScale={colorScales}
-            labelRadius={170}
+            colorScale={'heatmap'}
+            // colorScale={colorPallete}
+            // labelRadius={170}
             innerRadius={70}
             style={{
               labels: {
@@ -112,7 +185,6 @@ const ExpenseTrackingScreen = props => {
               },
             }}
           />
-
           <View
             style={{
               position: 'absolute',
@@ -124,18 +196,29 @@ const ExpenseTrackingScreen = props => {
             <Text style={{fontSize: 23, fontWeight: 'bold'}}>
               {totalExpense}
             </Text>
+            <Text style={styles.monthName}>
+              {monthNames[d.getMonth()].charAt(0).toUpperCase() +
+                monthNames[d.getMonth()].slice(1)}
+            </Text>
           </View>
         </View>
-        <View style={{marginHorizontal: '2%'}}>
-          <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
-            <Text style={{marginRight: '2%', fontSize: 17, fontWeight: '700'}}>Amount (₹)</Text>
-            <Text style={{fontSize: 17, fontWeight: '700'}}>Percentage</Text>
+        <View style={{marginTop: '7%', marginHorizontal: '5%'}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              marginBottom: '3%',
+            }}>
+            <Text style={{fontSize: 17, fontWeight: '700'}}>Amount (₹)</Text>
+            <Text style={{fontSize: 17, fontWeight: '700', marginLeft: '5%'}}>
+              Percentage
+            </Text>
           </View>
           <FlatList
-            data={flatListData}
+            data={categoryExpenses}
             renderItem={renderItem}
             keyExtractor={item => item.id}
-            />
+          />
         </View>
       </View>
     );
@@ -168,6 +251,7 @@ const ExpenseTrackingScreen = props => {
   );
 };
 
+
 const styles = StyleSheet.create({
   console: {
     backgroundColor: colors.backgroundColor,
@@ -197,11 +281,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   topBarText: {
-    marginTop: 5,
+    marginTop: '10%',
+    marginLeft: '5%',
     fontSize: 23,
     fontWeight: '800',
     textAlign: 'left',
     flexWrap: 'wrap',
+  },
+  monthName: {
+    fontWeight: '700',
+    fontSize: 22,
+    marginTop: '145%',
   },
   dorpdownIcon: {
     height: 25,

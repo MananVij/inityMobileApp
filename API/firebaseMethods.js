@@ -1,14 +1,13 @@
 import {
-  getFirestore,
   collection,
-  addDoc,
   getDocs,
-  deleteDoc,
   doc,
   setDoc,
   updateDoc,
 } from 'firebase/firestore/lite';
-import moment from 'moment';
+import EncryptedStorage from 'react-native-encrypted-storage';
+import {storeDataLocally} from '../app/functions/localStorage';
+
 import {db, userId} from '../config/keys';
 
 export const getTotalExpense = async () => {
@@ -17,6 +16,18 @@ export const getTotalExpense = async () => {
   const expenseList = totalExpenseSnapshot.docs.map(doc => doc.data());
   return expenseList.map(item => {
     if (item.userId === userId) {
+      return item.totalExpense;
+    }
+  });
+};
+export const userData = async () => {
+  const totalExpenseCol = collection(db, 'users');
+  const totalExpenseSnapshot = await getDocs(totalExpenseCol);
+  const expenseList = totalExpenseSnapshot.docs.map(doc => doc.data());
+  console.log('expesne list: ', expenseList);
+  return expenseList.filter((item, key) => {
+    console.log(item);
+    if (item.user_details.uid == userId) {
       return item.totalExpense;
     }
   });
@@ -39,26 +50,136 @@ export const createTotalExpenseDoc = async () => {
   }
 };
 
-const previousTotal = async () => {
-  const totalExpenseCol = collection(db, 'total_expense');
-  const totalExpenseSnapshot = await getDocs(totalExpenseCol);
-  const expenseList = totalExpenseSnapshot.docs.map(doc => doc.data());
-  const hello = expenseList.filter(item => {
-    return item.userId === userId;
-  });
-  return hello[0].totalExpense;
+export const createSignupDoc = async user => {
+  const signupData = {
+    userDetails: {
+      name: user.displayName,
+      email: user.email,
+      uid: userId,
+    },
+    monthlyExpense: {
+      jan: '0',
+      feb: '0',
+      march: '0',
+      april: '0',
+      may: '0',
+      june: '0',
+      july: '0',
+      aug: '0',
+      sept: '0',
+      oct: '0',
+      nov: '0',
+      dec: '0',
+    },
+    monthlyIncome: {
+      jan: '0',
+      feb: '0',
+      march: '0',
+      april: '0',
+      may: '0',
+      june: '0',
+      july: '0',
+      aug: '0',
+      sept: '0',
+      oct: '0',
+      nov: '0',
+      dec: '0',
+    },
+    categories: {
+      Bills: '🧾',
+      Clothing: '👕',
+      "EMI's": '📃',
+      Education: '📚',
+      Food: '🍕',
+      Grocery: '🥑',
+      Gym: '🏋🏻‍♂️',
+      Healhcare: '💊',
+      Insurence: '💰',
+      Investments: '📈',
+      Miscelleneous: '🤷‍♂️',
+      Party: '🎉',
+      Shopping: '🛍',
+      Taxes: '💸',
+      Travel: '🚘',
+    },
+    expenses: {},
+  };
+  try {
+    const docRef = await setDoc(doc(db, 'users', userId), signupData);
+    await storeDataLocally('userData', [signupData]);
+    console.log('Signup Doc created');
+  } catch (e) {
+    console.log('Error in creating signup doc: ', e);
+  }
 };
 
-export const updateTotalExpense = async newExpense => {
-  const newTotalExpense = newExpense + (await previousTotal());
-  const frankDocRef = doc(db, 'total_expense', userId);
-  console.log('Total Expense Updated');
+export const getUserData = async () => {
   try {
-    await updateDoc(frankDocRef, {
-      totalExpense: newTotalExpense,
+    const userCol = collection(db, 'users');
+    const userSnapshot = await getDocs(userCol);
+    const expenseList = userSnapshot.docs.map(doc => doc.data());
+    const data = expenseList.filter((item, key) => {
+      if (item?.userDetails?.uid == userId) {
+        return item;
+      }
     });
+    return data;
   } catch (error) {
-    console.log('error in updating', error);
+    console.log(error, 'in fetching data');
+  }
+};
+
+export const addExpense = async (userData, expenseData) => {
+  const monthNames = [
+    'jan',
+    'feb',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'aug',
+    'sept',
+    'oct',
+    'nov',
+    'dec',
+  ];
+
+  const monthName = monthNames[Number(expenseData.date.split('-')[1]) - 1];
+
+  const d = new Date();
+  const thisMonthName = monthNames[d.getMonth()];
+  const updatedMonthlyExpense = String(
+    Number(userData[0].monthlyExpense[monthName]) + Number(expenseData.amount),
+  );
+  let date = expenseData.date;
+
+  if (userData[0].expenses[date] === undefined) {
+    userData[0].expenses[date] = Array(expenseData);
+  } else {
+    userData[0].expenses[date].push(expenseData);
+  }
+
+  userData[0].monthlyExpense[monthName] = updatedMonthlyExpense;
+
+  try {
+    const docRef = await setDoc(doc(db, 'users', userId), userData[0]);
+    console.log('Expense Added');
+  } catch (error) {
+    console.log('Error in adding expense: ', error);
+  }
+};
+
+export const addCategory = async (userData, categoryName, categoryEmoji) => {
+  userData[0].categories = {
+    ...userData[0].categories,
+    [categoryName]: categoryEmoji,
+  };
+  try {
+    const docRef = await setDoc(doc(db, 'users', userId), userData[0]);
+    console.log('Category Added');
+  } catch (error) {
+    console.log('Error in adding category: ', error);
   }
 };
 
@@ -118,71 +239,4 @@ export const updateCategoryTotalExpense = async (newExpense, category) => {
   } catch (error) {
     console.log('error in updating', error);
   }
-};
-
-export const getUserTotalExpenses = async () => {
-  var totalExpenseCol = collection(db, 'total_expense');
-  var totalExpenseSnapshot = await getDocs(totalExpenseCol);
-  var expenseList = totalExpenseSnapshot.docs.map(doc => doc.data());
-  var hello = expenseList.map(item => {
-    if (item.userId === userId) {
-      return item;
-    }
-  });
-
-  var pieChartData = hello[0]
-  var totalExpense = hello[0].totalExpense
-  delete pieChartData.totalExpense
-  delete pieChartData.userId
-
-  var flatListData = pieChartData
-
-  let count = 0
-  let obj2 = []
-  var keyNa = Object.keys(flatListData)
-  var colorPallete = ['#e4572e', '#17bebb', '#ffc914', '#4700D8', '#76b041', '#9a348e']
-
-  keyNa.map((item, index) => {
-    obj2.push({id: ++count, title: item, expense: flatListData[item], expensePer: ((flatListData[item]*100)/totalExpense).toFixed(2), color: colorPallete[index]})
-  })
-
-  var keyNames = Object.keys(pieChartData);
-  let obj = [];
-  keyNames.map(item => {
-    obj.push({x: item, y: pieChartData[item]});
-  });
-  return [obj, totalExpense, obj2];
-};
-
-export const getTwoDaysExpenses = async () => {
-  const expenseCol = collection(db, 'expenses');
-  const expenseSnapshot = await getDocs(expenseCol);
-  const expenseList = expenseSnapshot.docs.map(doc => doc.data());
-  const hello = expenseList.map(item => {
-    if (item.userId === userId) {
-      return item;
-    }
-  });
-  const yesterdayExpense = hello.filter(item => {
-    return (
-      date_diff_indays(item.date, moment(new Date()).format('MM/DD/YYYY')) == 1
-    );
-  });
-  const todayExpense = hello.filter(item => {
-    return (
-      date_diff_indays(item.date, moment(new Date()).format('MM/DD/YYYY')) == 0
-    );
-  });
-  const twoDaysExpenses = [todayExpense, yesterdayExpense];
-  return(twoDaysExpenses);
-};
-
-var date_diff_indays = function (date1, date2) {
-  var dt1 = new Date(date1);
-  var dt2 = new Date(date2);
-  return Math.floor(
-    (Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) -
-      Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate())) /
-      (1000 * 60 * 60 * 24),
-  );
 };

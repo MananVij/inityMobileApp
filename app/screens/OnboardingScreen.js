@@ -55,6 +55,8 @@ function OnboardingScreen({navigation}) {
       pages={[
         {
           backgroundColor: '#B9F8D3',
+          image: <Image source={require('../../assets/icons/piggy.png')} />,
+
           title: (
             <Text
               style={{

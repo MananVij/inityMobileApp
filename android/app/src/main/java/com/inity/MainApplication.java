@@ -8,7 +8,6 @@ import com.centaurwarchief.smslistener.SmsListenerPackage;
 import com.ocetnik.timer.BackgroundTimerPackage;
 import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
 import com.react.SmsPackage;
-import com.centaurwarchief.smslistener.SmsListenerPackage;
 import com.horcrux.svg.SvgPackage;
 import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 import com.facebook.react.ReactInstanceManager;

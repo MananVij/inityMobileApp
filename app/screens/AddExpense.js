@@ -1,45 +1,49 @@
 import {
   View,
-  Text,
   StyleSheet,
   SafeAreaView,
-  Image,
-  Button,
-  TextInput,
-  TouchableOpacity,
   ScrollView,
   Alert,
+  ToastAndroid,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import React, {useState, useRef} from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import SelectDropdown from 'react-native-select-dropdown';
 import Moment from 'react-moment';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import colors from '../config/colors';
 import moment from 'moment';
-import {db, userId} from '../../config/keys';
-import {
-  updateTotalExpense,
-  updateCategoryTotalExpense,
-} from '../../API/firebaseMethods';
+import {addExpense, addCategory} from '../../API/firebaseMethods';
+import RBSheet from 'react-native-raw-bottom-sheet';
 
-import {collection, addDoc} from 'firebase/firestore/lite';
+import {useRoute} from '@react-navigation/native';
+import {
+  Button,
+  Portal,
+  Dialog,
+  Paragraph,
+  TextInput,
+  Provider,
+  Text,
+} from 'react-native-paper';
 
 export default function AddExpense() {
-  const categories = [
-    'Grocery',
-    'Education',
-    'Transportation',
-    'Party',
-    'Medicines',
-    'Others',
-  ];
+  const showToast = msg => {
+    ToastAndroid.show(msg, ToastAndroid.SHORT);
+  };
+
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const refRBSheet = useRef();
+
   const [dateSelected, setDateSelected] = useState('');
   const [amount, setAmount] = useState();
   const [note, setNote] = useState();
   const [category, setCategory] = useState('');
+  const [categoryEmoji, setCategoryEmoji] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryEmoji, setNewCategoryEmoji] = useState('');
+
+  const route = useRoute();
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -54,7 +58,7 @@ export default function AddExpense() {
   };
 
   const handleConfirm = date => {
-    setDateSelected(moment(date).format('YYYY-MM-DD'));
+    setDateSelected(moment(date).format('DD-MM-YYYY'));
     hideDatePicker();
   };
 
@@ -68,110 +72,224 @@ export default function AddExpense() {
     } else if (!category) {
       Alert.alert('Please select category of expense.');
     } else {
+      const expenseData = {
+        amount: amount,
+        date: dateSelected,
+        category: category,
+        type: note,
+      };
       try {
-        const docRef = await addDoc(collection(db, 'expenses'), {
-          userId: userId,
-          amount: amount,
-          date: dateSelected,
-          category: category,
-          type: note
-        });
-        console.log('Document written with ID: ', docRef.id);
-        updateTotalExpense(parseFloat(amount));
-        updateCategoryTotalExpense(parseFloat(amount), category);
+        addExpense(route?.params.userData, expenseData);
+        showToast('Expense Added');
       } catch (e) {
         console.log('error in uploading document: ', e);
+        showToast('Some Error Occured. Please try again!');
       }
     }
   };
+  const [visible, setVisible] = useState(false);
 
-  return (
-    <SafeAreaView
-      style={{flex: 1, justifyContent: 'flex-start', alignItems: 'center'}}>
-      <View style={{alignSelf: 'flex-start'}}>
-        <Text
-          style={{
-            fontSize: 22,
-            fontWeight: 'bold',
-            margin: 20,
-            marginTop: '10%',
-            marginBottom: '8%',
-          }}>
-          Add Expenses Manually
-        </Text>
-      </View>
-      <Image
-        source={require('../../assets/icons/peeps.png')}
-        style={{width: '80%', height: '40%'}}></Image>
-      <ScrollView bounces={false} style={{width: '100%'}}>
-        <View style={{width: '90%', alignSelf: 'flex-start', marginLeft: 20}}>
-          <TextInput
-            style={styles.text}
-            placeholder="Enter Amount"
-            placeholderTextColor={'black'}
-            keyboardType="number-pad"
-            step={0.1}
-            value={amount}
-            onChangeText={amount => setAmount(amount)}></TextInput>
+  const showDialog = () => setVisible(true);
 
-          <SelectDropdown
-            data={categories}
-            buttonStyle={{
-              borderRadius: 5,
-              borderColor: colors.logoColor,
-              borderWidth: 1,
-              backgroundColor: colors.backgroundColor,
-              height: 45,
-              width: '100%',
-              marginBottom: '2%',
-            }}
-            disableAutoScroll={false}
-            dropdownStyle={{borderRadius: 10, elevation: 30}}
-            buttonTextStyle={{fontSize: 16, textAlign: 'left', marginLeft: 0}}
-            onSelect={selectedItem => {
-              setCategory(selectedItem);
-              console.log(selectedItem);
-            }}
-          />
-          <TextInput
-            style={styles.text}
-            placeholder="Enter Note"
-            placeholderTextColor={'black'}
-            step={0.1}
-            value={note}
-            onChangeText={note => setNote(note)}></TextInput>
-        </View>
-        <View
-          style={{
-            height: 45,
-            width: '90%',
-            backgroundColor: colors.backgroundColor,
-            borderColor: colors.logoColor,
-            borderWidth: 1,
-            justifyContent: 'center',
-            // paddingHorizontal: 10,
-            marginBottom: 10,
-            marginLeft: 20,
-            borderRadius: 5,
-          }}>
+  const hideDialog = () => setVisible(false);
+
+  const categoryButton = (categoryName, categoryEmoji, index) => {
+    return (
+      <Button
+        key={index}
+        mode={category == categoryName ? 'contained' : 'contained-tonal'}
+        style={styles.categoryButton}
+        onPress={() => {
+          setCategory(categoryName);
+          setCategoryEmoji(categoryEmoji);
+          refRBSheet.current.close();
+        }}>
+        {categoryEmoji + ' ' + categoryName}
+      </Button>
+    );
+  };
+
+  const addCategoryDialog = () => {
+    return (
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <Dialog.Content>
+            <Paragraph>Add New Category</Paragraph>
+            <TextInput
+              label={'Name'}
+              mode="outlined"
+              value={newCategoryName}
+              onChangeText={categoryName =>
+                setNewCategoryName(categoryName)
+              }></TextInput>
+            <TextInput
+              label={'Emoji'}
+              mode="outlined"
+              value={newCategoryEmoji}
+              onChangeText={categoryEmoji =>
+                setNewCategoryEmoji(categoryEmoji)
+              }></TextInput>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              onPress={() => {
+                addCategory(
+                  route.params.userData,
+                  newCategoryName,
+                  newCategoryEmoji,
+                );
+                hideDialog();
+              }}>
+              Done
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    );
+  };
+
+  const bottomSheet = () => {
+    return (
+      <RBSheet
+        dragFromTopOnly={true}
+        ref={refRBSheet}
+        height={260}
+        closeDuration={450}
+        openDuration={450}
+        closeOnDragDown={true}
+        closeOnPressMask={false}
+        customStyles={{
+          wrapper: {
+            backgroundColor: 'transparent',
+          },
+          draggableIcon: {
+            backgroundColor: '#000',
+          },
+        }}>
+        <ScrollView>
           <View
             style={{
-              justifyContent: 'space-between',
               flexDirection: 'row',
-              // marginVertical: 10,
+              flexWrap: 'wrap',
+              marginBottom: '3%',
+              paddingHorizontal: '2%',
             }}>
-            <Text style={{fontSize: 15, color: 'black', marginLeft: '2%'}}>
-              Select Date
-            </Text>
-            <View style={{flexDirection: 'row'}}>
-              <Text style={{fontSize: 16, marginRight: 10, color: 'black'}}>
-                {dateSelected}{' '}
-              </Text>
-              <TouchableOpacity
-                style={{alignItems: 'center'}}
-                onPress={showDatePicker}>
-                <MaterialCommunityIcons name="calendar" size={25} />
-              </TouchableOpacity>
+            {Object.entries(route?.params.userData[0]?.categories).map(
+              (el, index) => {
+                return categoryButton(el[0], el[1], index);
+              },
+            )}
+            <Button
+              mode="contained-tonal"
+              style={styles.categoryButton}
+              onPress={() => {
+                refRBSheet.current.close();
+                showDialog();
+              }}>
+              Add Category
+            </Button>
+          </View>
+        </ScrollView>
+      </RBSheet>
+    );
+  };
+
+  return (
+    <Provider>
+      <KeyboardAwareScrollView style={{marginHorizontal: '5%'}}>
+        <View style={{alignItems: 'center'}}>
+          <Text
+            style={{
+              fontWeight: '700',
+              fontSize: 40,
+              paddingTop: '30%',
+            }}
+            variant="headlineSmall">
+            Expense
+          </Text>
+        </View>
+        {addCategoryDialog()}
+        <View bounces={false}>
+          <View style={{}}>
+            <View
+              style={{
+                flexWrap: 'wrap',
+                alignSelf: 'center',
+                borderBottomWidth: 2,
+                marginTop: 50,
+                marginBottom: 60,
+                flexDirection: 'row',
+              }}>
+              <Text style={{fontSize: 60}}>₹</Text>
+              <TextInput
+                mode="outlined"
+                placeholder="1"
+                keyboardType="numeric"
+                outlineColor="transparent"
+                activeOutlineColor="transparent"
+                style={{
+                  flexWrap: 'wrap',
+                  backgroundColor: 'transparent',
+                  fontSize: 75,
+                  height: 75,
+                  textDecorationLine: 'underline',
+                  textDecorationColor: 'black',
+                  fontWeight: '500',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                }}
+                value={amount}
+                onChangeText={amount => setAmount(amount)}
+              />
+            </View>
+
+            <View
+              style={{
+                flexWrap: 'wrap',
+                flexDirection: 'row',
+                alignSelf: 'center',
+              }}>
+              <Button
+                mode="contained-tonal"
+                style={{width: '48%', marginRight: '2%'}}>
+                Cash 💸
+              </Button>
+              <Button
+                onPress={() => refRBSheet.current.open()}
+                style={{width: '48%'}}
+                mode={'contained-tonal'}>
+                {category == ''
+                  ? 'Select Category'
+                  : `${categoryEmoji} ${category}`}
+              </Button>
+            </View>
+            {bottomSheet()}
+            <View style={{flexDirection: 'row', marginTop: '3%'}}>
+              <TextInput
+                mode="outlined"
+                label="Memo"
+                autoCapitalize="sentences"
+                style={{width: '48%', marginRight: '2%'}}
+                value={note}
+                onChangeText={note => setNote(note)}
+              />
+
+              <TextInput
+                mode="outlined"
+                label=""
+                placeholder={'Date'}
+                editable={false}
+                value={dateSelected}
+                style={{width: '48%', marginRight: '2%'}}
+                right={
+                  <TextInput.Icon
+                    icon="calendar"
+                    onPress={() => {
+                      showDatePicker();
+                    }}
+                  />
+                }
+              />
               <DateTimePickerModal
                 isVisible={isDatePickerVisible}
                 mode="date"
@@ -180,22 +298,18 @@ export default function AddExpense() {
               />
             </View>
           </View>
+          <Button
+            mode="contained"
+            onPress={UploadDocs}
+            style={{
+              marginTop: '5%',
+              marginBottom: '4%',
+            }}>
+            Add Expense
+          </Button>
         </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            marginBottom: '2%',
-            marginTop: '4%',
-          }}>
-          <TouchableOpacity onPress={UploadDocs}>
-            <View style={styles.button}>
-              <Text style={styles.buttonText}>Add Expense</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      </KeyboardAwareScrollView>
+    </Provider>
   );
 }
 const styles = StyleSheet.create({
@@ -220,5 +334,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
     textAlign: 'center',
+  },
+  categoryButton: {
+    marginVertical: '1%',
+    marginHorizontal: '1%',
   },
 });

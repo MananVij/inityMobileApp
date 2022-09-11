@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Alert} from 'react-native';
 import NotifService from './NotifService';
 import Sms from './Sms';
+
 export default class NewScreen extends Component {
   constructor(props) {
     super(props);
@@ -28,9 +29,14 @@ export default class NewScreen extends Component {
   handlePerm(perms) {
     Alert.alert('Permissions', JSON.stringify(perms));
   }
-
   render() {
-    // return <Sms pushNotif={this.pushNotif}></Sms>;
-    return <Sms pushNotif={this.pushNotif} setSms={this.props.setSms}></Sms>;
+    return (
+      <Sms
+        pushNotif={this.pushNotif}
+        amount={this.props.amount}
+        newSms={this.props.setSms}
+        date={this.props.date}
+        userData={this.props.userData}></Sms>
+    );
   }
 }

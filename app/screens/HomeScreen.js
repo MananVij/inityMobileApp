@@ -5,17 +5,17 @@ import {
   Image,
   Dimensions,
   RefreshControl,
+  useColorScheme,
+  ToastAndroid,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import {authentication} from '../../config/keys';
-import {getTwoDaysExpenses} from '../../API/firebaseMethods';
-import NewScreen from './NewScreen';
+import {getUserData} from '../../API/firebaseMethods';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+
+import {FAB, Card, Button, IconButton} from 'react-native-paper';
 
 import colors from '../config/colors';
 import {TouchableOpacity} from 'react-native';
@@ -23,45 +23,12 @@ import {ScrollView} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import {StatusBar} from 'expo-status-bar';
 import {onAuthStateChanged, getAuth} from 'firebase/auth';
+import EncryptedStorage from 'react-native-encrypted-storage';
+import NetInfo from '@react-native-community/netinfo';
+import {useRoute} from '@react-navigation/native';
+import moment from 'moment';
 
-import {getUserTotalExpenses} from '../../API/firebaseMethods';
-
-const getIcon = title => {
-  if (title == 'Party') {
-    return (
-      <MaterialCommunityIcons
-        color={'#035397'}
-        name="party-popper"
-        size={34}></MaterialCommunityIcons>
-    );
-  } else if (title == 'Transportation') {
-    return <FontAwesome5 color={'#035397'} name="car" size={34}></FontAwesome5>;
-  } else if (title == 'Medicines') {
-    return (
-      <FontAwesome5 color={'#035397'} name="hospital" size={34}></FontAwesome5>
-    );
-  } else if (title == 'Party') {
-    return (
-      <MaterialCommunityIcons
-        color={'#035397'}
-        name="party-popper"
-        size={34}></MaterialCommunityIcons>
-    );
-  } else if (title == 'Education') {
-    return <FontAwesome color={'#035397'} name="book" size={34}></FontAwesome>;
-  } else if (title == 'Grocery') {
-    return (
-      <MaterialIcons
-        color={'#035397'}
-        name="local-grocery-store"
-        size={34}></MaterialIcons>
-    );
-  } else if (title == 'Others') {
-    return <Ionicons color={'#035397'} name="document" size={34}></Ionicons>;
-  }
-};
-
-const expenseComponent = (amount, title, type) => {
+const expenseComponent = (amount, title, type, categories) => {
   return (
     <View
       style={{
@@ -79,7 +46,7 @@ const expenseComponent = (amount, title, type) => {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        {getIcon(title)}
+        <Text style={{fontSize: 30}}>{categories[title]}</Text>
       </View>
       <View
         style={{
@@ -95,65 +62,157 @@ const expenseComponent = (amount, title, type) => {
             {type}
           </Text>
         </View>
-        <Text style={{fontWeight: '500', fontSize: 19, marginRight: '5%'}}>₹ {amount}</Text>
+        <Text style={{fontWeight: '500', fontSize: 19, marginRight: '5%'}}>
+          ₹ {amount}
+        </Text>
       </View>
     </View>
   );
 };
+export default function HomeScreen({navigation}, props) {
+  const route = useRoute();
+  const [isConnected, setIsConnected] = useState(false);
 
-export default function HomeScreen({navigation}) {
-  const [totalExpense, setTotalExpense] = useState([]);
-  const [expenseData, setExpenseData] = useState([]);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [changePercentage, setChangePercentage] = useState(0);
+  const [lastSixMonthsExpenses, setLastSixMonthsExpenses] = useState([
+    0, 0, 0, 0, 0, 0,
+  ]);
+  const [lastSixMonthsName, setLastSixMonthsName] = useState([]);
 
-  const expensesOverview = async () => {
-    const hey = await getTwoDaysExpenses();
-    let count = 0;
-    const overview = hey.map(item => {
-      item.id = ++count;
-      return item;
+  const [userData, setUserData] = useState([null]);
+  const [isOnline, setIsOnline] = React.useState(true);
+
+
+  useEffect(() => {
+    setUserData(route.params.userData);
+  }, []);
+
+  useEffect(() => {
+    // Fetch connection status first time when app loads as listener is added afterwards
+    NetInfo.fetch().then(state => {
+      if (isOnline !== state.isConnected) {
+        setIsOnline(!!state.isConnected && !!state.isInternetReachable);
+      }
     });
-    setExpenseData(overview);
-    return expenseData;
+  }, []);
+
+  NetInfo.configure({
+    reachabilityUrl: 'https://google.com',
+    reachabilityTest: async response => response.status === 200,
+    reachabilityLongTimeout: 30 * 1000, // 60s
+    reachabilityShortTimeout: 5 * 1000, // 5s
+    reachabilityRequestTimeout: 15 * 1000, // 15s
+  });
+
+  NetInfo.addEventListener(state => {
+    if (isOnline !== state.isConnected) {
+      setIsOnline(!!state.isConnected && !!state.isInternetReachable);
+    }
+  });
+  
+  const setUserDataFxn = async () => {
+    // console.log(isOnline, 'in home')
+    // if (isOnline) {
+    //   console.log('in if home');
+      const data = await getUserData();
+      setUserData(data);
+    // } else {
+    //   console.log('in else home.js');
+    //   ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
+    // }
   };
 
-  useEffect(() => {
-    (async () => {
-      var data = await getUserTotalExpenses();
-      setTotalExpense(data[1]);
-    })();
-  }, []);
-  useEffect(() => {
-    (async () => {
-      await expensesOverview();
-    })();
-  }, []);
+  async function retrieveUserSession() {
+    try {
+      const session = await EncryptedStorage.getItem('user');
+      if (session !== undefined) {
+        setUserData([JSON.parse(session)]);
+      }
+    } catch (error) {
+      console.log('error in accessing storage: ', error);
+    }
+  }
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     return new Promise(resolve => {
-      setTimeout(() => {
-        expensesOverview();
+      setTimeout(async () => {
+        await setUserDataFxn();
         setRefreshing(false);
       }, 2000);
     });
   }, []);
 
+  const monthNames = [
+    'jan',
+    'feb',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'aug',
+    'sept',
+    'oct',
+    'nov',
+    'dec',
+  ];
+
+  useEffect(() => {
+    let arr1 = [];
+    let arr2 = [];
+    const monthName = new Date().getMonth();
+
+    var cnt = 0;
+    var i = monthName - 5;
+    if (route.params.userData != null) {
+      while (cnt < 6) {
+        arr1.push(
+          monthNames[i].charAt(0).toUpperCase() + monthNames[i].slice(1),
+        );
+        arr2.push(Number(userData[0]?.monthlyExpense[monthNames[i]]));
+        i++;
+        cnt++;
+      }
+      setLastSixMonthsName(arr1);
+      setLastSixMonthsExpenses(arr2);
+    }
+  }, [userData]);
+
   const data = {
-    labels: ['Dec', 'Jan', 'Feb', 'March', 'April', 'May'],
+    labels: lastSixMonthsName,
     datasets: [
       {
-        data: [0, 0, 0, 0, 0, totalExpense],
+        data: isNaN(lastSixMonthsExpenses[0])
+          ? [0, 0, 0, 0, 0, 0]
+          : lastSixMonthsExpenses,
+        // data: [0, 0, 0, 0, 0, 0],
       },
     ],
   };
 
-  let change = data.datasets[0].data[4] > data.datasets[0].data[5];
-  let chartColor = change ? colors.green : colors.red;
-  let changePercentage =
-    ((data.datasets[0].data[5] - data.datasets[0].data[4]) /
-      data.datasets[0].data[0]) *
-    100;
+  let chartColor =
+    data.datasets[0].data[4] > data.datasets[0].data[5]
+      ? colors.green
+      : colors.red;
+
+  const thisMonthName = monthNames[new Date().getMonth()];
+  const prevMonthName = monthNames[new Date().getMonth() - 1];
+
+  useEffect(() => {
+    setChangePercentage(
+      route.params.userData != null
+        ? (Math.abs(
+            userData[0]?.monthlyExpense[thisMonthName] -
+              userData[0]?.monthlyExpense[prevMonthName],
+          ) /
+            userData[0]?.monthlyExpense[prevMonthName]) *
+            100
+        : 0,
+    );
+  }, [userData]);
+
   const auth = getAuth();
   const user = auth.currentUser;
 
@@ -170,18 +229,30 @@ export default function HomeScreen({navigation}) {
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          marginTop: 15,
-          marginHorizontal: 20,
+          marginTop: '5%',
+          paddingBottom: '2%',
+          marginHorizontal: '5%',
           marginBottom: 5,
           alignItems: 'center',
         }}>
-        <Text style={{fontSize: 30, fontWeight: '800'}}>
-          Hello, {firstName}
+        <Text
+          style={{
+            fontSize: 25,
+            fontWeight: '800',
+          }}>
+          Hello,{' '}
+          {userData[0] == null
+            ? ''
+            : userData[0].userDetails.name.substring(
+                0,
+                userData[0].userDetails.name.indexOf(' '),
+              )}
         </Text>
-
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('LogoutScreen');
+            navigation.navigate('LogoutScreen', {
+              userDetails: route?.params.userData[0].userDetails,
+            });
           }}>
           <Image
             style={{resizeMode: 'contain', width: 50, height: 50}}
@@ -190,37 +261,37 @@ export default function HomeScreen({navigation}) {
       </View>
     );
   };
-
   const monthlyContainer = () => {
     return (
-      <View
+      <Card
+        // onPress={() => {
+        //   navigation.navigate('ExpenseTrackingScreen', {
+        //     userData: route.params.userData,
+        //   });
+        // }}
         style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          marginTop: 15,
+          // backgroundColor: '#f7f7f7',
+          borderRadius: 20,
+          marginHorizontal: '5%',
         }}>
-        <View
-          style={{
-            backgroundColor: '#f7f7f7',
-            width: '90%',
-            height: 230,
-            borderRadius: 20,
-            shadowColor: '#000',
-            shadowOffset: {height: 0, width: 0},
-            shadowOpacity: 0.2,
-            elevation: 3,
-          }}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <Card.Content>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: '2%',
+            }}>
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate('ExpenseTrackingScreen');
+                navigation.navigate('ExpenseTrackingScreen', {
+                  userData: route.params.userData,
+                });
               }}>
               <Text
                 style={{
-                  marginTop: 17,
                   fontSize: 18,
                   fontWeight: 'bold',
-                  marginLeft: 27,
+                  marginLeft: '4%',
                   marginBottom: 5,
                   color: colors.blue,
                 }}>
@@ -232,28 +303,23 @@ export default function HomeScreen({navigation}) {
                 />{' '}
               </Text>
             </TouchableOpacity>
+
             <Text
               style={{
-                marginTop: 17,
+                // marginTop: 17,
                 fontSize: 18,
                 fontWeight: 'bold',
-                paddingRight: 27,
+                paddingRight: '4%',
                 color: chartColor,
               }}>
               {Math.abs(changePercentage).toFixed(2)}%
             </Text>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}></View>
           <View style={{flexDirection: 'row', justifyContent: 'center'}}>
             <LineChart
               data={data}
               width={Dimensions.get('window').width} // from react-native
               height={170}
-              // width={420}
               yAxisLbel="₹"
               yAxisSuffix="k"
               withHorizontalLabels={false}
@@ -287,9 +353,8 @@ export default function HomeScreen({navigation}) {
               }}
             />
           </View>
-        </View>
-      </View>
-      // </View>
+        </Card.Content>
+      </Card>
     );
   };
 
@@ -297,116 +362,185 @@ export default function HomeScreen({navigation}) {
     return (
       <View
         style={{
-          position: 'absolute',
-          bottom: 0,
-          marginHorizontal: 20,
-          marginBottom: 10,
           flexDirection: 'row',
           justifyContent: 'flex-end',
-          width: '90%',
+          position: 'absolute',
+          bottom: '3%',
+          right: '5%',
         }}>
-        <View
-          style={{
-            backgroundColor: colors.red,
-            width: 70,
-            height: 70,
-            borderRadius: 100,
-            shadowColor: '#000',
-            shadowOffset: {height: -2, width: 0},
-            shadowOpacity: 0.2,
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
-            alignItems: 'center',
-            elevation: 3,
-            marginBottom: 10,
-          }}>
-          <TouchableOpacity
-            style={{alignItems: 'center'}}
-            onPress={() => {
-              navigation.navigate('AddExpense');
-            }}>
-            <MaterialCommunityIcons
-              name="plus"
-              size={45}
-              color={colors.backgroundColor}
-            />
-          </TouchableOpacity>
-        </View>
+        <FAB
+          icon={'plus'}
+          variant={'tertiary'}
+          onPress={() => {
+            navigation.navigate('AddExpense', {
+              userData: route.params.userData,
+            });
+          }}
+        />
       </View>
     );
   };
 
   const goalSection = () => {
     return (
-      <View style={{marginTop: 15, alignItems: 'center'}}>
-        <View
+      <View
+        style={{
+          justifyContent: 'center',
+          flexDirection: 'row',
+          marginTop: '2%',
+        }}>
+        <Card
           style={{
-            backgroundColor: '#f7f7f7',
-            width: '90%',
-            height: 60,
             borderRadius: 20,
-            shadowColor: '#000',
-            shadowOffset: {height: 0, width: 0},
-            shadowOpacity: 0.2,
-            flexDirection: 'column',
-            justifyContent: 'center',
-            elevation: 3,
+            // backgroundColor: '#f7f7f7',
+            height: 60,
+            width: '90%',
           }}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <View style={{flexDirection: 'column', justifyContent: 'center'}}>
-              <Text style={{marginLeft: 20, fontSize: 20, fontWeight: '700'}}>
+          <Card.Content>
+            <TouchableOpacity
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}
+              onPress={() => {
+                navigation.navigate('', {
+                  userData: route.params.userData,
+                });
+              }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginLeft: '2%',
+                  color: colors.blue,
+                }}>
                 My Goals
               </Text>
-            </View>
-            <View style={{marginRight: 20, alignSelf: 'flex-end'}}>
               <Text
-                style={{fontSize: 19, fontWeight: 'bold', textAlign: 'right'}}>
-                65% 🎉
+                style={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: colors.blue,
+                }}>
+                65%
               </Text>
-              {/* <Text style={{fontSize: 18, fontWeight: '600', textAlign: 'center'}}>10% <AntDesign name="caretup" color={colors.green} size={15}></AntDesign></Text> */}
-            </View>
-          </View>
-        </View>
+            </TouchableOpacity>
+          </Card.Content>
+        </Card>
       </View>
     );
   };
 
-  return (
-    <SafeAreaView style={{flex: 1}}>
-      <ScrollView
-        bounces={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        <StatusBar backgroundColor={colors.greyColor}></StatusBar>
-        {topBar()}
-        <View style={{paddingBottom: 80}}>
-          {monthlyContainer()}
-          {goalSection()}
-          <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
-            <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
-            {expenseData[0]?.map(exp => {
-              return (
-                <View style={{marginVertical: 10}}>
-                  {expenseComponent(exp.amount, exp.category, exp.type)}
-                </View>
-              );
-            })}
+  const todayDate = moment(new Date()).format('DD-MM-YYYY');
+  const yesterdayDate = moment().subtract(1, 'days').format('DD-MM-YYYY');
+
+  if (route?.params.userData != null)
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          // backgroundColor: 'white'
+        }}>
+        <ScrollView
+          bounces={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          <StatusBar backgroundColor={colors.greyColor}></StatusBar>
+          {topBar()}
+          <View
+          // style={{marginBottom: '10%'}}
+          >
+            {monthlyContainer()}
+            {goalSection()}
+            <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
+              <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
+              {userData[0] != null &&
+              userData[0]?.expenses[todayDate] != undefined ? (
+                userData[0].expenses[todayDate].map((exp, index) => {
+                  return (
+                    <View style={{marginVertical: '2%'}} key={index}>
+                      {expenseComponent(
+                        exp.amount,
+                        exp.category,
+                        exp.type,
+                        userData[0].categories,
+                      )}
+                    </View>
+                  );
+                })
+              ) : (
+                <>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '600',
+                      marginVertical: '5%',
+                    }}>
+                    No Expense
+                  </Text>
+                </>
+              )}
+            </View>
+            <View style={{marginLeft: 20, marginTop: '5%', marginRight: 20}}>
+              <Text style={{fontWeight: '600', fontSize: 18}}>Yesterday</Text>
+              {userData[0] != null &&
+              userData[0]?.expenses[yesterdayDate] != undefined ? (
+                userData[0]?.expenses[yesterdayDate].map((exp, index) => {
+                  return (
+                    <View style={{marginVertical: '2%'}} key={index}>
+                      {expenseComponent(
+                        exp.amount,
+                        exp.category,
+                        exp.type,
+                        userData[0].categories,
+                      )}
+                    </View>
+                  );
+                })
+              ) : (
+                <>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '600',
+                      marginVertical: '5%',
+                    }}>
+                    No Expense
+                  </Text>
+                </>
+              )}
+            </View>
           </View>
-          <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
-            <Text style={{fontWeight: '600', fontSize: 18}}>Yesterday</Text>
-            {expenseData[1]?.map(exp => {
-              return (
-                <View style={{marginVertical: 10}}>
-                  {expenseComponent(exp.amount, exp.category, exp.type)}
-                </View>
-              );
-            })}
-          </View>
-        </View>
-      </ScrollView>
-      {lastPart()}
-    </SafeAreaView>
-  );
+          <TouchableOpacity
+            style={{
+              position: 'relative',
+              bottom: '3%',
+              left: '5%',
+              marginTop: '10%',
+            }}
+            onPress={() => {
+              navigation.navigate('WeekSeg', {
+                expenses: route?.params.userData[0].expenses,
+                categories: route?.params.userData[0].categories,
+              });
+            }}>
+            <Text
+              style={{fontSize: 18, fontWeight: 'bold', color: colors.blue}}>
+              Explore More →
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+        {lastPart()}
+      </SafeAreaView>
+    );
+  else
+    return (
+      <SafeAreaView style={{flex: 1, justifyContent: 'center'}}>
+        <Image
+          source={require('../../assets/logo.gif')}
+          style={{alignSelf: 'center', width: '25.4%', height: '12%'}}
+        />
+      </SafeAreaView>
+    );
 }
 const styles = StyleSheet.create({});
+
+

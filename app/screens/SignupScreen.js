@@ -4,125 +4,144 @@ import {
   View,
   StyleSheet,
   TextInput,
-  Button,
-  Text,
   TouchableOpacity,
   Alert,
   PermissionsAndroid,
 } from 'react-native';
 import colors from '../config/colors';
+import {
+  Button,
+  Provider,
+  Text,
+  Portal,
+  Paragraph,
+  Dialog,
+} from 'react-native-paper';
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
 import {authentication} from '../../config/keys';
-import {createTotalExpenseDoc} from '../../API/firebaseMethods'
+import {createTotalExpenseDoc} from '../../API/firebaseMethods';
+import {createSignupDoc} from '../../API/firebaseMethods';
 
 function LoginScreen({navigation}) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loader, setLoader] = useState(false);
+  const [dialogMsg, setDialogMsg] = useState('');
 
-  const registerUser = () => {
-    createUserWithEmailAndPassword(authentication, email, password)
-      .then(res => {
-        authentication.currentUser.displayName = name;
-        console.log('User Created Successfully', authentication);
-        createTotalExpenseDoc();
-        updateProfile(authentication.currentUser, {displayName: name});
-      })
-      .catch(error => {
-        throw new Error(error);
-      });
-  };
+  const [visible, setVisible] = useState(false);
+  const showDialog = () => setVisible(true);
+  const hideDialog = () => setVisible(false);
 
-  const handlePress = () => {
+  const handlePress = async () => {
     if (!name) {
-      Alert.alert('First name is required');
+      setDialogMsg('Name is required');
+      showDialog();
     } else if (!email) {
-      Alert.alert('Email field is required.');
+      setDialogMsg('Email is required');
+      showDialog();
     } else if (!password) {
-      Alert.alert('Password field is required.');
+      setDialogMsg('Password is required');
+      showDialog();
     } else {
-      // registerUser();
-      createUserWithEmailAndPassword(authentication, email, password)
+      await createUserWithEmailAndPassword(authentication, email, password)
         .then(res => {
           authentication.currentUser.displayName = name;
           console.log('User Created Successfully', authentication);
-          createTotalExpenseDoc();
+          createSignupDoc(authentication.currentUser);
           updateProfile(authentication.currentUser, {displayName: name});
           navigation.replace('HomeScreen');
         })
         .catch(error => {
-          console.log(error.code)          
+          console.log(error.code);
           if (error.code == 'auth/email-already-in-use') {
-            Alert.alert('The email address is already in use!');
+            setDialogMsg('The email address is already in use!');
+            showDialog();
           } else if (error.code == 'auth/invalid-email') {
-            Alert.alert('The email address is invalid!');
+            setDialogMsg('The email address is invalid!');
+            showDialog();
           } else {
-            console.log('error while creating user:', error);
-            Alert.alert('Something went wrong!');
+            setDialogMsg('Something went wrong!');
+            showDialog();
+            console.log(error.code);
           }
         });
     }
   };
 
   return (
-    <View style={styles.component}>
-      <View style={styles.box}>
-        <Text style={styles.heading}>Enter your Credentials</Text>
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.text}
-            placeholder="Name"
-            autoFocus={true}
-            placeholderTextColor={'black'}
-            value={name}
-            onChangeText={name => setName(name)}></TextInput>
-          <TextInput
-            style={styles.text}
-            placeholder="Email"
-            placeholderTextColor={'black'}
-            value={email}
-            onChangeText={email => setEmail(email)}></TextInput>
-          <TextInput
-            style={styles.text}
-            placeholder="Password"
-            secureTextEntry={true}
-            placeholderTextColor={'black'}
-            value={password}
-            onChangeText={password => setPassword(password)}></TextInput>
-        </View>
-        <TouchableOpacity>
-          <View style={styles.button}>
-            <Text style={styles.buttonText} onPress={handlePress}>
-              Sign Up
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <View style={styles.button}>
-            <Text style={styles.buttonText}>Sign Up With Google</Text>
-          </View>
-        </TouchableOpacity>
-        <View
-          style={{
-            borderBottomColor: 'black',
-            borderBottomWidth: 1,
-            marginTop: '5%',
-          }}
-        />
-        <Text style={styles.signinText}>Already have an account?</Text>
-        <TouchableOpacity>
-          <View style={styles.button}>
-            <Text
-              style={styles.buttonText}
-              onPress={() => {
-                navigation.navigate('LoginScreen');
-              }}>
-              Sign In
-            </Text>
-          </View>
-        </TouchableOpacity>
+    <Provider>
+      <View>
+        <Portal>
+          <Dialog visible={visible} onDismiss={hideDialog}>
+            <Dialog.Content>
+              <Paragraph>{dialogMsg}</Paragraph>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={hideDialog}>Ok</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
       </View>
-    </View>
+
+      <View style={styles.component}>
+        <View style={styles.box}>
+          <Text style={styles.heading}>Enter your Credentials</Text>
+          <View style={styles.inputBox}>
+            <TextInput
+              style={styles.text}
+              placeholder="Name"
+              autoFocus={true}
+              placeholderTextColor={'black'}
+              value={name}
+              onChangeText={name => setName(name)}></TextInput>
+            <TextInput
+              style={styles.text}
+              placeholder="Email"
+              placeholderTextColor={'black'}
+              value={email}
+              onChangeText={email => setEmail(email)}></TextInput>
+            <TextInput
+              style={styles.text}
+              placeholder="Password"
+              secureTextEntry={true}
+              placeholderTextColor={'black'}
+              value={password}
+              onChangeText={password => setPassword(password)}></TextInput>
+          </View>
+          <Button
+            style={styles.button}
+            onPress={async () => {
+              setLoader(true);
+              await handlePress();
+              setLoader(false);
+            }}
+            loading={loader}
+            labelStyle={styles.buttonText}>
+            Sign Up
+          </Button>
+          <Button style={styles.button} labelStyle={styles.buttonText}>
+            Sign Up With Google
+          </Button>
+          <View
+            style={{
+              borderBottomColor: 'black',
+              borderBottomWidth: 1,
+              marginTop: '5%',
+            }}
+          />
+          <Text style={styles.signinText}>Already have an account?</Text>
+          <Button
+            style={styles.button}
+            labelStyle={styles.buttonText}
+            onPress={() => {
+              navigation.navigate('LoginScreen');
+            }}>
+            Sign In
+          </Button>
+        </View>
+      </View>
+    </Provider>
   );
 }
 const styles = StyleSheet.create({
@@ -160,16 +179,14 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    backgroundColor: '#1e5bfa',
+    paddingVertical: 4,
     marginTop: '2%',
+    backgroundColor: '#1e5bfa',
   },
   buttonText: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 18,
-    textAlign: 'center',
+    fontWeight: '700',
+    fontSize: 17,
   },
   signinText: {
     textAlign: 'center',
