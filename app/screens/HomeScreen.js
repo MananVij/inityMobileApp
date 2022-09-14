@@ -26,6 +26,8 @@ import {onAuthStateChanged, getAuth} from 'firebase/auth';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {useRoute} from '@react-navigation/native';
 import moment from 'moment';
+import SplashScreen from './SplashScreen';
+import GoogleAd from '../components/GoogleAd';
 
 const expenseComponent = (amount, title, type, categories) => {
   return (
@@ -400,12 +402,14 @@ export default function HomeScreen({navigation}, props) {
           flex: 1,
           // backgroundColor: 'white'
         }}>
+          <GoogleAd></GoogleAd>
         <ScrollView
           bounces={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }>
           <StatusBar backgroundColor={colors.greyColor}></StatusBar>
+          {/* {' '} */}
           {topBar()}
           <View
           // style={{marginBottom: '10%'}}
@@ -489,18 +493,18 @@ export default function HomeScreen({navigation}, props) {
               Explore More →
             </Text>
           </TouchableOpacity>
+        {/* <GoogleAd/> */}
         </ScrollView>
         {lastPart()}
       </SafeAreaView>
     );
   else
     return (
-      <SafeAreaView style={{flex: 1, justifyContent: 'center'}}>
-        <Image
-          source={require('../../assets/logo.gif')}
-          style={{alignSelf: 'center', width: '25.4%', height: '12%'}}
-        />
-      </SafeAreaView>
+      <Stack.Screen
+        options={{headerShown: false}}
+        name="SplashScreen"
+        component={SplashScreen}
+      />
     );
 }
 const styles = StyleSheet.create({});

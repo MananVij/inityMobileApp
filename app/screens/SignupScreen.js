@@ -222,8 +222,8 @@ function LoginScreen({navigation}) {
               alignSelf: 'center',
               width: 90,
               height: 90,
-              marginTop: '25%',
-              marginBottom: '10%',
+              marginTop: '45%',
+              marginBottom: '15%',
             }}></Image>
           <Text style={styles.heading}>Sign up</Text>
 

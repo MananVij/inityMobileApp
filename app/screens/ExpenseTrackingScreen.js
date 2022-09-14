@@ -18,6 +18,7 @@ import {Text} from 'react-native-paper';
 import {VictoryPie} from 'victory-native';
 import colors from '../config/colors';
 import {useRoute} from '@react-navigation/native';
+import GoogleAd from '../components/GoogleAd';
 
 
 // Data used to make the animate prop work
@@ -244,6 +245,7 @@ const ExpenseTrackingScreen = props => {
   return (
     <SafeAreaView style={styles.console}>
       <ScrollView bounces={false}>
+      <GoogleAd/>
         {topBar()}
         {pieChart()}
       </ScrollView>

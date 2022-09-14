@@ -36,6 +36,7 @@
     "react-native-encrypted-storage": "^4.0.2",
     "react-native-geolocation-service": "^5.3.0",
     "react-native-get-sms-android": "^2.1.0",
+    "react-native-google-mobile-ads": "^8.0.1",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-modal-datetime-picker": "^13.1.2",
     "react-native-onboarding-swiper": "^1.2.0",

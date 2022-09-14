@@ -1,4 +1,10 @@
 {
   "name": "inity",
-  "displayName": "inity"
+  "displayName": "inity",
+  
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-3917072038261238~7759405369",
+    "ios_app_id": "ca-app-pub-3917072038261238~7759405369"
+  }
+  
 }
