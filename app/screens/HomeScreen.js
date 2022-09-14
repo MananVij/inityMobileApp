@@ -24,7 +24,6 @@ import {LineChart} from 'react-native-chart-kit';
 import {StatusBar} from 'expo-status-bar';
 import {onAuthStateChanged, getAuth} from 'firebase/auth';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import NetInfo from '@react-native-community/netinfo';
 import {useRoute} from '@react-navigation/native';
 import moment from 'moment';
 
@@ -71,7 +70,6 @@ const expenseComponent = (amount, title, type, categories) => {
 };
 export default function HomeScreen({navigation}, props) {
   const route = useRoute();
-  const [isConnected, setIsConnected] = useState(false);
 
   const [refreshing, setRefreshing] = React.useState(false);
   const [changePercentage, setChangePercentage] = useState(0);
@@ -81,58 +79,20 @@ export default function HomeScreen({navigation}, props) {
   const [lastSixMonthsName, setLastSixMonthsName] = useState([]);
 
   const [userData, setUserData] = useState([null]);
-  const [isOnline, setIsOnline] = React.useState(true);
-
 
   useEffect(() => {
     setUserData(route.params.userData);
   }, []);
 
-  useEffect(() => {
-    // Fetch connection status first time when app loads as listener is added afterwards
-    NetInfo.fetch().then(state => {
-      if (isOnline !== state.isConnected) {
-        setIsOnline(!!state.isConnected && !!state.isInternetReachable);
-      }
-    });
-  }, []);
-
-  NetInfo.configure({
-    reachabilityUrl: 'https://google.com',
-    reachabilityTest: async response => response.status === 200,
-    reachabilityLongTimeout: 30 * 1000, // 60s
-    reachabilityShortTimeout: 5 * 1000, // 5s
-    reachabilityRequestTimeout: 15 * 1000, // 15s
-  });
-
-  NetInfo.addEventListener(state => {
-    if (isOnline !== state.isConnected) {
-      setIsOnline(!!state.isConnected && !!state.isInternetReachable);
-    }
-  });
-  
   const setUserDataFxn = async () => {
-    // console.log(isOnline, 'in home')
-    // if (isOnline) {
-    //   console.log('in if home');
-      const data = await getUserData();
-      setUserData(data);
-    // } else {
-    //   console.log('in else home.js');
-    //   ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
-    // }
-  };
-
-  async function retrieveUserSession() {
     try {
-      const session = await EncryptedStorage.getItem('user');
-      if (session !== undefined) {
-        setUserData([JSON.parse(session)]);
-      }
+      const data = await getUserData();
+      if (data) setUserData(data);
+      else ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
     } catch (error) {
-      console.log('error in accessing storage: ', error);
+      console.log(error);
     }
-  }
+  };
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -243,10 +203,12 @@ export default function HomeScreen({navigation}, props) {
           Hello,{' '}
           {userData[0] == null
             ? ''
-            : userData[0].userDetails.name.substring(
+            : userData[0].userDetails.name.indexOf(' ') != -1
+            ? userData[0].userDetails.name.substring(
                 0,
                 userData[0].userDetails.name.indexOf(' '),
-              )}
+              )
+            : userData[0].userDetails.name}
         </Text>
         <TouchableOpacity
           onPress={() => {
@@ -542,5 +504,3 @@ export default function HomeScreen({navigation}, props) {
     );
 }
 const styles = StyleSheet.create({});
-
-

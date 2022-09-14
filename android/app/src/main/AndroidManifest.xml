@@ -29,7 +29,6 @@
     <meta-data android:name="com.dieam.reactnativepushnotification.notification_foreground" android:value="false" />
     <!-- Change the resource name to your App's accent color - or any other color you want -->
     <meta-data android:name="com.dieam.reactnativepushnotification.notification_color" android:resource="@color/white" /> <!-- or @android:color/{name} to use a standard color -->
-
     <receiver android:name="com.dieam.reactnativepushnotification.maodules.RNPushNotificationActions" android:exported="true" />
     <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" android:exported="true" />
     <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver" android:exported="true">
@@ -37,6 +36,19 @@
         <action android:name="android.intent.action.BOOT_COMPLETED" />
         <action android:name="android.intent.action.QUICKBOOT_POWERON" />
         <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:host="https://inityapp.page.link/downloads" android:scheme="https" />
+      </intent-filter>
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:host="https://inityapp.page.link/download" android:scheme="http" />
+        <data android:host="https://inityapp.page.link/download" android:scheme="https" />
       </intent-filter>
     </receiver>
     <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService" android:exported="false">

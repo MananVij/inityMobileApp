@@ -1,6 +1,11 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {StatusBar} from 'expo-status-bar';
-import {StyleSheet, PermissionsAndroid, AppState} from 'react-native';
+import {
+  StyleSheet,
+  PermissionsAndroid,
+  AppState,
+  ToastAndroid,
+} from 'react-native';
 
 import SmsAndroid from 'react-native-get-sms-android';
 import NetInfo from '@react-native-community/netinfo';
@@ -20,7 +25,7 @@ import Sms from './app/screens/Sms';
 import LogoutScreen from './app/screens/LogoutScreen';
 import AddExpense from './app/screens/AddExpense';
 import NewScreen from './app/screens/NewScreen';
-// import ResetPasswordScreen from './app/screens/ResetPasswordScreen';
+import ResetPasswordScreen from './app/screens/ResetPasswordScreen';
 import WeekSeg from './app/screens/WeekSeg';
 import {onAuthStateChanged} from 'firebase/auth';
 import SmsListener from 'react-native-android-sms-listener';
@@ -37,6 +42,8 @@ import SplashScreen from './app/screens/SplashScreen';
 
 //Local Storage
 import {storeDataLocally, retrieveData} from './app/functions/localStorage';
+import { firebase } from '@react-native-firebase/auth';
+import { async } from '@firebase/util';
 
 const requestSMSPermission = async () => {
   try {
@@ -166,12 +173,18 @@ export default function App() {
   });
 
   const setUserDataFxn = async () => {
-    if (isOnline) {
-      const data = await getUserData();
-      setUserData([data]);
-    } else {
-      const data = await retrieveData('userData');
-      setUserData(data);
+    const localData = await retrieveData('userData');
+    if (localData[0]) {
+      // if (isOnline) {
+        console.log('in if')
+        const data = await getUserData(localData[0][0].userDetails.uid);
+        setUserData(data);
+      // } else {
+      //   const data = await retrieveData('userData');
+      //   setUserData(data);
+      //   ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
+      // }
+      setUser(localData[0][0].userDetails);
     }
     setLoading(false);
   };
@@ -211,6 +224,12 @@ export default function App() {
       },
     );
   };
+
+
+
+    // await firebase.auth().currentUser.reload()
+
+  
 
   const reverseGeocode = async (lat, long) => {
     try {
@@ -269,13 +288,13 @@ export default function App() {
       <Stack.Navigator>
         {!loading ? (
           <>
-            {user && userData[0] && userData[0].length ? (
+            {user && userData[0] && userData.length ? (
               <>
                 {!sms.length[0] ? (
                   <>
                     <Stack.Screen
                       options={{headerShown: false}}
-                      initialParams={{userData: userData[0]}}
+                      initialParams={{userData: userData}}
                       name="HomeScreen"
                       component={HomeScreen}></Stack.Screen>
                     <Stack.Screen
@@ -305,9 +324,18 @@ export default function App() {
                     />
                     <Stack.Screen
                       options={{headerShown: false}}
-                      initialParams={{setUser: setUser}}
                       name="LoginScreen"
                       component={LoginScreen}
+                    />
+                    <Stack.Screen
+                      options={{headerShown: false}}
+                      name="ResetPasswordScreen"
+                      component={ResetPasswordScreen}
+                    />
+                    <Stack.Screen
+                      options={{headerShown: false}}
+                      name="SignupScreen"
+                      component={SignupScreen}
                     />
                   </>
                 ) : (
@@ -333,11 +361,11 @@ export default function App() {
                   name="SignupScreen"
                   component={SignupScreen}
                 />
-                {/* <Stack.Screen
+                <Stack.Screen
                   options={{headerShown: false}}
                   name="ResetPasswordScreen"
                   component={ResetPasswordScreen}
-                /> */}
+                />
                 <Stack.Screen
                   options={{headerShown: false}}
                   name="LoginScreen"

@@ -23,7 +23,6 @@ export async function clearStorage() {
     try {
         await EncryptedStorage.clear();
         const data = await retrieveData('userData')
-        console.log(data, 'in local')
     } catch (error) {
         console.log('error in clearing storage', error)
         // There was an error on the native side

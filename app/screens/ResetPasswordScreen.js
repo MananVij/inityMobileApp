@@ -1,13 +1,20 @@
-import {View, Text, StyleSheet, SafeAreaView, ScrollView} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  Image,
+  ScrollView,
+} from 'react-native';
 import React, {useState} from 'react';
 import {Button, TextInput} from 'react-native-paper';
 import {getAuth, sendPasswordResetEmail} from 'firebase/auth';
 import colors from '../config/colors';
 
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+// import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-const auth = getAuth();
 export default function ResetPasswordScreen() {
+  const auth = getAuth();
 
   const [email, setEmail] = useState('');
   const sendResetEmail = () => {
@@ -34,6 +41,14 @@ export default function ResetPasswordScreen() {
         label="Email"
         value={email}
         onChangeText={email => setEmail(email)}></TextInput>
+      <Image
+        source={require('../../assets/icons/forgotPass.png')}
+        style={{
+          width: '100%',
+          height: '90%',
+          alignSelf: 'center',
+          marginTop: '-25%',
+        }}></Image>
       <Button
         style={styles.button}
         labelStyle={styles.buttonText}
@@ -65,7 +80,6 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 12,
     width: '100%',
-    // marginTop: '10%',
     position: 'absolute',
     bottom: 0,
 

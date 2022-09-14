@@ -6,7 +6,7 @@ import {
   updateDoc,
 } from 'firebase/firestore/lite';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import {storeDataLocally} from '../app/functions/localStorage';
+import {retrieveData, storeDataLocally} from '../app/functions/localStorage';
 
 import {db, userId} from '../config/keys';
 
@@ -55,7 +55,7 @@ export const createSignupDoc = async user => {
     userDetails: {
       name: user.displayName,
       email: user.email,
-      uid: userId,
+      uid: userId ? userId : user.userId,
     },
     monthlyExpense: {
       jan: '0',
@@ -105,21 +105,21 @@ export const createSignupDoc = async user => {
     expenses: {},
   };
   try {
-    const docRef = await setDoc(doc(db, 'users', userId), signupData);
-    await storeDataLocally('userData', [signupData]);
+    const docRef = await setDoc(doc(db, 'users', userId ? userId : user.userId), signupData);
+    await storeDataLocally("userData", [signupData]);
     console.log('Signup Doc created');
   } catch (e) {
     console.log('Error in creating signup doc: ', e);
   }
 };
 
-export const getUserData = async () => {
+export const getUserData = async (googleUserId) => {
   try {
     const userCol = collection(db, 'users');
     const userSnapshot = await getDocs(userCol);
     const expenseList = userSnapshot.docs.map(doc => doc.data());
     const data = expenseList.filter((item, key) => {
-      if (item?.userDetails?.uid == userId) {
+      if (item?.userDetails?.uid == userId ? userId : googleUserId) {
         return item;
       }
     });
@@ -159,11 +159,11 @@ export const addExpense = async (userData, expenseData) => {
   } else {
     userData[0].expenses[date].push(expenseData);
   }
-
+  // console.log(userData[0].userDetails.uid)
   userData[0].monthlyExpense[monthName] = updatedMonthlyExpense;
 
   try {
-    const docRef = await setDoc(doc(db, 'users', userId), userData[0]);
+    const docRef = await setDoc(doc(db, 'users', userData[0].userDetails.uid), userData[0]);
     console.log('Expense Added');
   } catch (error) {
     console.log('Error in adding expense: ', error);
