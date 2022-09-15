@@ -1,16 +1,12 @@
 import React, {useState} from 'react';
 import {
-  View,
   StyleSheet,
-  // TextInput,
-  // Text,
-  StatusBar,
   TouchableOpacity,
   ToastAndroid,
   Image,
   ScrollView,
 } from 'react-native';
-import {signInWithEmailAndPassword} from 'firebase/auth';
+import {signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import {
   Button,
   Dialog,
@@ -29,7 +25,6 @@ import {
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
 import {firebase} from '@react-native-firebase/auth';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 function LoginScreen({navigation}) {
@@ -53,16 +48,30 @@ function LoginScreen({navigation}) {
     } else {
       await signInWithEmailAndPassword(authentication, email, password)
         .then(async res => {
-          const data = await getUserData();
-          storeDataLocally('userData', data);
-          navigation.replace('HomeScreen', {userData: data});
+          if (authentication.currentUser.emailVerified) {
+            const data = await getUserData();
+            storeDataLocally('userData', data);
+            navigation.replace('HomeScreen', {userData: data});
+          } else {
+            signOut(authentication)
+              .then(async () => {
+                ToastAndroid.show('User not verified.', ToastAndroid.SHORT);
+              })
+              .catch(error => {
+                console.log('Error is Signout: ', error);
+              });
+          }
         })
         .catch(err => {
           console.log('err: ', err);
           if (err.code == 'auth/wrong-password') {
             setDialogMsg('Wrong Password');
-            showDialog();
+          } else if (err.code == 'auth/user-not-found') {
+            setDialogMsg('User not found');
+          } else {
+            setDialogMsg('Some error occured');
           }
+          showDialog();
         });
     }
     setEmail('');
@@ -70,28 +79,28 @@ function LoginScreen({navigation}) {
   };
   const googleSignIn = async () => {
     try {
-      await GoogleSignin.signIn()
-        .then(data => {
-          const credential = firebase.auth.GoogleAuthProvider.credential(
-            data.idToken,
-            data.accessToken,
-          );
-          return firebase.auth().signInWithCredential(credential);
-        })
-        .then(async user => {
-          const googleUser = {
-            displayName: user.user.displayName,
-            email: user.user.email,
-            userId: user.user.uid,
-          };
-          const data = await getUserData(googleUser.userId);
-          await storeDataLocally('userData', data);
-          navigation.replace('HomeScreen', {userData: data});
-        })
-        .catch(error => {
-          const {code, message} = error;
-          console.log(error);
-        });
+      await GoogleSignin.signIn().then(async data => {
+        const credential = firebase.auth.GoogleAuthProvider.credential(
+          data.idToken,
+          data.accessToken,
+        );
+        return firebase
+          .auth()
+          .signInWithCredential(credential)
+          .then(async user => {
+            if (user.additionalUserInfo.isNewUser) {
+              const googleUser = {
+                displayName: user.user.displayName,
+                email: user.user.email,
+                userId: user.user.uid,
+              };
+              await createSignupDoc(googleUser);
+            }
+            const userData = await getUserData(user.user.uid);
+            storeDataLocally('userData', userData);
+            navigation.replace('HomeScreen', {userData: userData});
+          });
+      });
     } catch (error) {
       if (error.message == 'Sign in action cancelled')
         ToastAndroid.show('User not signed up', ToastAndroid.SHORT);

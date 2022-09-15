@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 
-import {View, StyleSheet, Image, ToastAndroid, ScrollView} from 'react-native';
+import {StyleSheet, Image, ToastAndroid, ScrollView} from 'react-native';
 import colors from '../config/colors';
 import {
   Button,
@@ -12,42 +12,18 @@ import {
   Dialog,
 } from 'react-native-paper';
 import {
-  signInWithPopup,
   createUserWithEmailAndPassword,
   sendEmailVerification,
-  updateProfile,
-  getRedirectResult,
-  sendSignInLinkToEmail,
-  signInWithCredential,
-  OAuthCredential,
-  isSignInWithEmailLink,
+  updateProfile
 } from 'firebase/auth';
 import {firebase} from '@react-native-firebase/auth';
-import {authentication, provider} from '../../config/keys';
-import {createTotalExpenseDoc, getUserData} from '../../API/firebaseMethods';
+import {authentication} from '../../config/keys';
+import {getUserData} from '../../API/firebaseMethods';
 import {createSignupDoc} from '../../API/firebaseMethods';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {getAuth} from 'firebase/auth';
+import {signOut} from 'firebase/auth';
 import {SafeAreaView} from 'react-native-safe-area-context';
-
-const actionCodeSettings = {
-  // URL you want to redirect back to. The domain (www.example.com) for this
-  // URL must be in the authorized domains list in the Firebase Console.
-  // url: '^https://.*.com/.*$inityapp.page.link/download/',
-  url: 'https://example.com/?currPage=1',
-  // url: '^https://inity-214a0\.firebaseapp\.com/.*$',
-  // This must be true.
-  handleCodeInApp: true,
-  iOS: {
-    bundleId: 'com.inity.ios',
-  },
-  android: {
-    packageName: 'com.inity.android',
-    installApp: true,
-    minimumVersion: '12',
-  },
-  // dynamicLinkDomain: '^https://inityapp.page.link/download/',
-};
+import { storeDataLocally } from '../functions/localStorage';
 
 function LoginScreen({navigation}) {
   const [name, setName] = useState('');
@@ -76,23 +52,6 @@ function LoginScreen({navigation}) {
       setDialogMsg('Password is required');
       showDialog();
     } else {
-      // sendSignInLinkToEmail(authentication, email, actionCodeSettings)
-      //   .then(() => {
-      //     const manan = isSignInWithEmailLink(authentication, email)
-      //     console.log('link sent');
-      //     console.log("manan", manan)
-      //     // The link was successfully sent. Inform the user.
-      //     // Save the email locally so you don't need to ask the user for it again
-      //     // if they open the link on the same device.
-      //     // window.localStorage.setItem('emailForSignIn', email);
-      //     // ...
-      //   })
-      //   .catch(error => {
-      //     const errorCode = error.code;
-      //     const errorMessage = error.message;
-      //     console.log(errorCode, errorMessage);
-      //     // ...
-      //   });
       try {
         const user = await createUserWithEmailAndPassword(
           authentication,
@@ -100,20 +59,29 @@ function LoginScreen({navigation}) {
           password,
         )
           .then(async res => {
-            console.log(res)
             authentication.currentUser.displayName = name;
-            console.log('User Created Successfully', authentication);
-            await createSignupDoc(authentication.currentUser);
-            await updateProfile(authentication.currentUser, {displayName: name});
-            // signOut(authentication)
-            // .then(async () => {
-            //   await clearStorage();
-            //   console.log('User Signed Out');
-            // })
-            // .catch(error => {
-            //   console.log('Error is Signout: ', error);
-            // });
-            navigation.replace('HomeScreen');
+            const signupData = await createSignupDoc(
+              authentication.currentUser,
+            );
+            await updateProfile(authentication.currentUser, {
+              displayName: name,
+            });
+
+            await sendEmailVerification(authentication.currentUser, {
+              url: 'https://inityapp.page.link/download',
+              handleCodeInApp: true,
+            });
+            console.log('Email verification link sent');
+            signOut(authentication)
+              .then(async () => {
+                ToastAndroid.show(
+                  'Email verifcation link sent to your email.',
+                  ToastAndroid.SHORT,
+                );
+              })
+              .catch(error => {
+                console.log('Error is Signout: ', error);
+              });
           })
           .catch(error => {
             console.log(error.code);
@@ -129,65 +97,79 @@ function LoginScreen({navigation}) {
               console.log(error);
             }
           });
-        console.log("user", user);
-        await sendEmailVerification(authentication.currentUser, {
-          handleCodeInApp: true,
-          url: 'https://inityapp.page.link/download',
-          iOS: {
-            bundleId: 'com.inity.ios',
-          },
-          android: {
-            packageName: 'com.inity.android',
-            installApp: true,
-            minimumVersion: '12',
-          },
-          handleCodeInApp: true,
-        })
-          .then(res => {
-            console.log("Verification Link Sent");
-          })
-          .catch(e => {
-            console.log(e, 'manan');
-          });
-        // await firebase
-        //   .auth()
-        //   .currentUser.sendEmailVerification({
-        //     handleCodeInApp: true,
-        //     url: 'https://inityapp.page.link/download',
-        //   })
-        //   .then(res => {
-        //     console.log('Verification Email Sent');
-        //   });
       } catch (error) {
         console.log('error', error);
       }
+      setName('');
+      setEmail('');
+      setPassword('');
     }
   };
 
   const googleSignup = async () => {
     try {
-      await GoogleSignin.signIn()
-        .then(data => {
-          const credential = firebase.auth.GoogleAuthProvider.credential(
-            data.idToken,
-            data.accessToken,
-          );
-          return firebase.auth().signInWithCredential(credential);
-        })
-        .then(async user => {
-          const googleUser = {
-            displayName: user.user.displayName,
-            email: user.user.email,
-            userId: user.user.uid,
-          };
-          await createSignupDoc(googleUser);
-          const data = await getUserData(googleUser.userId);
-          navigation.replace('HomeScreen', {userData: [data]});
-        })
-        .catch(error => {
-          const {code, message} = error;
-          console.log(error);
-        });
+      await GoogleSignin.signIn().then(async data => {
+        const credential = firebase.auth.GoogleAuthProvider.credential(
+          data.idToken,
+          data.accessToken,
+        );
+        return firebase
+          .auth()
+          .signInWithCredential(credential)
+          .then(async user => {
+            if (user.additionalUserInfo.isNewUser) {
+              const googleUser = {
+                displayName: user.user.displayName,
+                email: user.user.email,
+                userId: user.user.uid,
+              };
+              await createSignupDoc(googleUser);
+            }
+            const userData = await getUserData(user.user.uid);
+            storeDataLocally("userData", userData)
+            navigation.replace('HomeScreen', {userData: userData});
+
+            // await fetchSignInMethodsForEmail(authentication, data.user.email)
+            //   .then(async res => {
+            //     if (!res.length) {
+            //       const googleUser = {
+            //         displayName: user.user.displayName,
+            //         email: user.user.email,
+            //         userId: user.user.uid,
+            //       };
+            //       console.log('googleUser', googleUser);
+            //       await createSignupDoc(googleUser);
+            //     }
+            //     const userData = await getUserData(googleUser.userId);
+            //     navigation.replace('HomeScreen', {userData: userData});
+            //   })
+            //   .catch(e => {
+            //     console.log('error', e);
+            //   });
+          });
+      });
+      // .then(async user => {
+      //   // await fetchSignInMethodsForEmail(authentication, data.user.email).then(res => {
+      //   //   if(!da)
+
+      //   // }).catch(e => {
+      //   //   console.log("e", e);
+      //   // })
+      //   console.log('User Logged In');
+
+      //   // const googleUser = {
+      //   //   displayName: user.user.displayName,
+      //   //   email: user.user.email,
+      //   //   userId: user.user.uid,
+      //   // };
+      //   // await createSignupDoc(googleUser);
+      //   // const data = await getUserData(googleUser.userId);
+      //   // navigation.replace('HomeScreen', {userData: data});
+      // })
+      // .catch(error => {
+      //   const {code, message} = error;
+      //   console.log(error);
+      // });
     } catch (error) {
       if (error.message == 'Sign in action cancelled')
         ToastAndroid.show('User not signed up', ToastAndroid.SHORT);
@@ -276,23 +258,6 @@ function LoginScreen({navigation}) {
             }}>
             Sign Up With Google
           </Button>
-
-          {/* <View
-            style={{
-              borderBottomColor: 'black',
-              borderBottomWidth: 1,
-              marginTop: '5%',
-            }}
-          />
-          <Text style={styles.signinText}>Already have an account?</Text>
-          <Button
-            style={styles.button}
-            labelStyle={styles.buttonText}
-            onPress={() => {
-              navigation.navigate('LoginScreen');
-            }}>
-            Sign In
-          </Button> */}
           <Text style={styles.signupText}>
             Already have an account?{' '}
             <Text
@@ -312,37 +277,11 @@ function LoginScreen({navigation}) {
   );
 }
 const styles = StyleSheet.create({
-  box: {
-    width: '85%',
-    alignSelf: 'center',
-  },
-  component: {
-    backgroundColor: colors.backgroundColor,
-    flex: 1,
-    justifyContent: 'center',
-  },
   heading: {
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'left',
     marginBottom: '5%',
-  },
-  inputBox: {
-    alignItems: 'center',
-  },
-  text: {
-    height: 45,
-    width: '100%',
-    borderColor: '#1e5bfa',
-    paddingLeft: 10,
-    borderWidth: 1,
-    borderRadius: 3,
-    marginBottom: '2%',
-  },
-  forgotPasswordText: {
-    marginBottom: '6%',
-    fontSize: 18,
-    textAlign: 'right',
   },
   button: {
     borderRadius: 12,
@@ -352,13 +291,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: '700',
-  },
-  signinText: {
-    textAlign: 'center',
-    marginTop: '4%',
-    marginBottom: '2%',
-    fontSize: 20,
-    fontWeight: '500',
   },
   signupText: {
     textAlign: 'center',

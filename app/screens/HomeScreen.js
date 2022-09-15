@@ -5,7 +5,7 @@ import {
   Image,
   Dimensions,
   RefreshControl,
-  useColorScheme,
+  PermissionsAndroid,
   ToastAndroid,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
@@ -13,9 +13,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import {authentication} from '../../config/keys';
 import {getUserData} from '../../API/firebaseMethods';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-import {FAB, Card, Button, IconButton} from 'react-native-paper';
+import {FAB, Card} from 'react-native-paper';
 
 import colors from '../config/colors';
 import {TouchableOpacity} from 'react-native';
@@ -23,7 +22,6 @@ import {ScrollView} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import {StatusBar} from 'expo-status-bar';
 import {onAuthStateChanged, getAuth} from 'firebase/auth';
-import EncryptedStorage from 'react-native-encrypted-storage';
 import {useRoute} from '@react-navigation/native';
 import moment from 'moment';
 import SplashScreen from './SplashScreen';
@@ -402,7 +400,7 @@ export default function HomeScreen({navigation}, props) {
           flex: 1,
           // backgroundColor: 'white'
         }}>
-          <GoogleAd></GoogleAd>
+        <GoogleAd></GoogleAd>
         <ScrollView
           bounces={false}
           refreshControl={
@@ -493,7 +491,7 @@ export default function HomeScreen({navigation}, props) {
               Explore More →
             </Text>
           </TouchableOpacity>
-        {/* <GoogleAd/> */}
+          {/* <GoogleAd/> */}
         </ScrollView>
         {lastPart()}
       </SafeAreaView>

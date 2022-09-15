@@ -5,8 +5,6 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore/lite';
-import EncryptedStorage from 'react-native-encrypted-storage';
-import {retrieveData, storeDataLocally} from '../app/functions/localStorage';
 
 import {db, userId} from '../config/keys';
 
@@ -51,6 +49,7 @@ export const createTotalExpenseDoc = async () => {
 };
 
 export const createSignupDoc = async user => {
+
   const signupData = {
     userDetails: {
       name: user.displayName,
@@ -106,8 +105,9 @@ export const createSignupDoc = async user => {
   };
   try {
     const docRef = await setDoc(doc(db, 'users', userId ? userId : user.userId), signupData);
-    await storeDataLocally("userData", [signupData]);
+    // await storeDataLocally("userData", [signupData]);
     console.log('Signup Doc created');
+    return signupData
   } catch (e) {
     console.log('Error in creating signup doc: ', e);
   }
@@ -118,12 +118,22 @@ export const getUserData = async (googleUserId) => {
     const userCol = collection(db, 'users');
     const userSnapshot = await getDocs(userCol);
     const expenseList = userSnapshot.docs.map(doc => doc.data());
-    const data = expenseList.filter((item, key) => {
-      if (item?.userDetails?.uid == userId ? userId : googleUserId) {
-        return item;
-      }
+    if(googleUserId) {
+      const data = expenseList.filter((item, key) => { 
+        if (item?.userDetails?.uid == googleUserId) {
+          return item;
+        }
+      });
+      return data;
+    }
+    else {
+      const data = expenseList.filter((item, key) => { 
+        if (item?.userDetails?.uid == userId) {
+          return item;
+        }
     });
     return data;
+    }
   } catch (error) {
     console.log(error, 'in fetching data');
   }

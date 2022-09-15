@@ -1,9 +1,7 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {StatusBar} from 'expo-status-bar';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   PermissionsAndroid,
-  AppState,
   ToastAndroid,
 } from 'react-native';
 
@@ -28,9 +26,6 @@ import NewScreen from './app/screens/NewScreen';
 import ResetPasswordScreen from './app/screens/ResetPasswordScreen';
 import WeekSeg from './app/screens/WeekSeg';
 import {onAuthStateChanged} from 'firebase/auth';
-import SmsListener from 'react-native-android-sms-listener';
-
-// Console Notification
 
 // Background Service
 import BackgroundService from 'react-native-background-actions';
@@ -41,9 +36,7 @@ import {getUserData} from './API/firebaseMethods';
 import SplashScreen from './app/screens/SplashScreen';
 
 //Local Storage
-import {storeDataLocally, retrieveData} from './app/functions/localStorage';
-import { firebase } from '@react-native-firebase/auth';
-import { async } from '@firebase/util';
+import {retrieveData} from './app/functions/localStorage';
 
 const requestSMSPermission = async () => {
   try {
@@ -123,7 +116,7 @@ export default function App() {
   };
 
   const [userData, setUserData] = useState([]);
-  const [isOnline, setIsOnline] = useState(false);
+  const [isOnline, setIsOnline] = useState();
   const [sms, setSms] = useState([]);
   const [date, setDate] = useState('');
   const [amount, setAmount] = useState('');
@@ -136,11 +129,8 @@ export default function App() {
     requestLocationPermission();
   }, []);
   useEffect(() => {
-    // Fetch connection status first time when app loads as listener is added afterwards
-    NetInfo.fetch().then(state => {
-      if (isOnline !== state.isConnected) {
-        setIsOnline(!!state.isConnected && !!state.isInternetReachable);
-      }
+    NetInfo.addEventListener(state => {
+      setIsOnline(state.isConnected);
     });
   }, []);
 
@@ -157,33 +147,19 @@ export default function App() {
     }); // Only Android, iOS will ignore this call
   }, []);
 
-  useEffect(() => {
-    // Fetch connection status first time when app loads as listener is added afterwards
-    NetInfo.fetch().then(state => {
-      if (isOnline !== state.isConnected) {
-        setIsOnline(!!state.isConnected && !!state.isInternetReachable);
-      }
-    });
-  }, []);
-
-  NetInfo.addEventListener(state => {
-    if (isOnline !== state.isConnected) {
-      setIsOnline(!!state.isConnected && !!state.isInternetReachable);
-    }
-  });
-
   const setUserDataFxn = async () => {
     const localData = await retrieveData('userData');
     if (localData[0]) {
-      // if (isOnline) {
-        console.log('in if')
+      if (isOnline) {
+        console.log('in if');
         const data = await getUserData(localData[0][0].userDetails.uid);
         setUserData(data);
-      // } else {
-      //   const data = await retrieveData('userData');
-      //   setUserData(data);
-      //   ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
-      // }
+      } else if (isOnline == false) {
+        console.log('manan in else');
+        const data = await retrieveData('userData');
+        setUserData(data[0]);
+        ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
+      }
       setUser(localData[0][0].userDetails);
     }
     setLoading(false);
@@ -217,19 +193,13 @@ export default function App() {
           let date = moment(
             new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
           ).format('DD-MM-YYYY');
-          setSms(JSON.parse(smsList));
+          setSms([JSON.parse(smsList)[0]]);
           setAmount(amount);
           setDate(date);
         }
       },
     );
   };
-
-
-
-    // await firebase.auth().currentUser.reload()
-
-  
 
   const reverseGeocode = async (lat, long) => {
     try {
@@ -286,11 +256,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {!loading ? (
+        {!loading && isOnline != undefined ? (
           <>
             {user && userData[0] && userData.length ? (
               <>
-                {!sms.length[0] ? (
+                {!sms[0] ? (
                   <>
                     <Stack.Screen
                       options={{headerShown: false}}
@@ -340,12 +310,17 @@ export default function App() {
                   </>
                 ) : (
                   <>
-                    <NewScreen
-                      userData={userData[0]}
-                      pushNotification={pushNotification}
-                      amount={amount}
-                      date={date}
-                      setSms={setSms}></NewScreen>
+                    <Stack.Screen
+                      options={{headerShown: false}}
+                      name="NewScreen"
+                      component={NewScreen}
+                      initialParams={{
+                        userData: userData[0],
+                        amount: amount,
+                        date: date,
+                        setSms: setSms,
+                      }}
+                    />
                   </>
                 )}
               </>

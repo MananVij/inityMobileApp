@@ -1,3 +1,4 @@
+import { useRoute } from '@react-navigation/native';
 import React, {Component} from 'react';
 import {Alert} from 'react-native';
 import NotifService from './NotifService';
@@ -7,7 +8,6 @@ export default class NewScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-
     this.notif = new NotifService(
       this.onRegister.bind(this),
       this.onNotif.bind(this),
@@ -31,12 +31,12 @@ export default class NewScreen extends Component {
   }
   render() {
     return (
-      <Sms
+        <Sms
         pushNotif={this.pushNotif}
-        amount={this.props.amount}
-        newSms={this.props.setSms}
-        date={this.props.date}
-        userData={this.props.userData}></Sms>
+        amount={this.props.route.params.amount}
+        newSms={this.props.route.params.setSms}
+        date={this.props.route.params.date}
+        userData={[this.props.route.params.userData]}></Sms>
     );
   }
 }

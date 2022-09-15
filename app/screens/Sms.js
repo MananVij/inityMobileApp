@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import {useRoute} from '@react-navigation/native';
 import SmsListener from 'react-native-android-sms-listener';
 import SmsAndroid from 'react-native-get-sms-android';
 import moment from 'moment';
