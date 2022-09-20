@@ -16,9 +16,9 @@
   <!-- For running in background -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+  <!-- <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> -->
+  <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
+  <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
 
 
   <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:theme="@style/AppTheme">
@@ -41,14 +41,14 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:host="https://inityapp.page.link/downloads" android:scheme="https" />
+        <data android:host="https://inityappindia.page.link/verifys" android:scheme="https" />
       </intent-filter>
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:host="https://inityapp.page.link/download" android:scheme="http" />
-        <data android:host="https://inityapp.page.link/download" android:scheme="https" />
+        <data android:host="https://inityappindia.page.link/verify" android:scheme="http" />
+        <data android:host="https://inityappindia.page.link/verify" android:scheme="https" />
       </intent-filter>
     </receiver>
     <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService" android:exported="false">

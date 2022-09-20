@@ -7,6 +7,7 @@ import mobileAds, {
   TestIds,
   BannerAdSize,
 } from 'react-native-google-mobile-ads';
+import { adUnitId } from '../../config/keys';
 
 export default function GoogleAd() {
   // AppOpenAd.createForAdRequest(TestIds.APP_OPEN);
@@ -33,19 +34,8 @@ export default function GoogleAd() {
     .then(adapterStatuses => {
       // Initialization complete!
     });
-  const adUnitId = __DEV__
-    ? TestIds.APP_OPEN
-    : 'ca-app-pub-3940256099942544/6300978111';
+
   return (
-    <View>
-      {/* <BannerAd
-          unitId={adUnitId}
-          size={BannerAdSize.BANNER}
-          // requestOptions={{
-            //   requestNonPersonalizedAdsOnly: true,
-            // }}
-          /> */}
-      <BannerAd unitId={TestIds.BANNER} size={BannerAdSize.FULL_BANNER} />
-    </View>
+    <BannerAd unitId={adUnitId} size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
   );
 }

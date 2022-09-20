@@ -1,7 +1,9 @@
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import {View, Text, StyleSheet, ScrollView, Image} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {useRoute} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import colors from '../config/colors';
+import GoogleAd from '../components/GoogleAd';
 
 export default function WeekSeg() {
   const [expenses, setExpenses] = useState([]);
@@ -64,58 +66,82 @@ export default function WeekSeg() {
     );
   };
 
-  const renderExpense = el => {};
-
   return (
     <SafeAreaView
       style={{
+        flex: 1,
         paddingTop: '25%',
-        marginLeft: '5%',
-        marginBottom: '5%',
-        marginHorizontal: '2%',
+        // marginBottom: '5%',
       }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text
-          style={{
-            marginTop: '10%',
-            marginBottom: '2%',
-            fontWeight: '700',
-            fontSize: 25,
-          }}>
-          Expenses
-        </Text>
-        {expenses.map(el => {
-          return Object.keys(el).map((ele, idx) => {
-            return (
-              <View key={idx}>
-                <Text
-                  style={{
-                    fontWeight: '700',
-                    fontSize: 17,
-                    marginTop: '5%',
-                    marginBottom: '2%',
-                  }}>
-                  {el[ele][0].date.split('-')[0] +
-                    ' / ' +
-                    el[ele][0].date.split('-')[1]}
-                </Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{flexGrow: 1}}
+        style={{flex: 1}}>
+        <View style={{marginHorizontal: '5%', flex: 1}}>
+          <Text
+            style={{
+              marginTop: '5%',
+              marginBottom: '2%',
+              fontWeight: '700',
+              fontSize: 25,
+            }}>
+            Expenses
+          </Text>
+          {expenses.length != 0 ? (
+            expenses.map(el => {
+              return Object.keys(el).map((ele, idx) => {
+                return (
+                  <View key={idx}>
+                    <Text
+                      style={{
+                        fontWeight: '700',
+                        fontSize: 17,
+                        marginTop: '5%',
+                        marginBottom: '2%',
+                      }}>
+                      {el[ele][0].date.split('-')[0] +
+                        ' / ' +
+                        el[ele][0].date.split('-')[1]}
+                    </Text>
 
-                {el[ele].map((exp, index) => {
-                  return (
-                    <View key={index}>
-                      {expenseComponent(
-                        exp.amount,
-                        exp.category,
-                        exp.type,
-                        route?.params.categories,
-                      )}
-                    </View>
-                  );
-                })}
-              </View>
-            );
-          });
-        })}
+                    {el[ele].map((exp, index) => {
+                      return (
+                        <View key={index}>
+                          {expenseComponent(
+                            exp.amount,
+                            exp.category,
+                            exp.type,
+                            route?.params.categories,
+                          )}
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              });
+            })
+          ) : (
+            <>
+              <Image
+                source={require('../../assets/icons/no-expense.png')}
+                style={{width: '100%', height: 300, resizeMode: 'stretch', flexDirection: 'row', justifyContent: 'center'}}></Image>
+              <Text
+                style={{
+                  position: 'absolute',
+                  bottom: '10%',
+                  fontSize: 23,
+                  fontWeight: '700',
+                  alignSelf: 'center',
+                  color: colors.logoColor,
+                }}>
+                wohooo! no expense.
+              </Text>
+            </>
+          )}
+        </View>
+        <View style={{marginTop: '2%'}}>
+          <GoogleAd />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

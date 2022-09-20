@@ -9,31 +9,46 @@ import BackgroundService from 'react-native-background-actions';
 
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
-const options = {
+const   options = {
   taskName: 'Inity',
   taskTitle: 'Inity',
-  taskDesc: 'ExampleTask description',
+  taskDesc: 'Recording Your Transactions',
   taskIcon: {
     name: 'ic_launcher',
     type: 'mipmap',
   },
-  color: '#ff00ff',
   linkingURI: 'yourSchemeHere://chat/jane', // See Deep Linking for more info
   parameters: {
     delay: 1000,
   },
 };
 
+const getAmount = (smsBody) => {
+  if(smsBody.includes('Rs.')) {
+    const arr = smsBody.split('Rs.')[1]?.split(' ')
+    return arr[0] == '' ?  arr[1] : arr[0]
+  }
+  else if(smsBody.includes('Rs')) {
+    const arr = smsBody.split('Rs')[1]?.split(' ')
+
+    return arr[0] == '' ?  arr[1] : arr[0]
+  }
+  else if(smsBody.includes('INR'))
+  {
+    const arr = smsBody.split('INR')[1]?.split(' ')
+    return arr[0] == '' ? arr[1] : arr[0]
+  }
+}
+
 const Sms = props => {
   const [date, setDate] = useState('');
   const [amount, setAmount] = useState('');
-  const sender = ['JD-HDFCBK', 'JD-HDFCBK', 'CP-HDFCBK'];
   const [sms, setSms] = useState();
 
   const checkMsg = () => {
     const filter = {
       box: 'inbox',
-      address: new RegExp('w*BK\b'),
+      // address: new RegExp('w*BK\b'),
       read: 0,
       body: 'debited'
     };
@@ -50,14 +65,13 @@ const Sms = props => {
             JSON.parse(smsList)[0]?.body.includes('credited')) &&
           JSON.parse(smsList)[0]?._id != (await retrieveUserSession())
         ) {
-          let amount = JSON.parse(smsList)[0].body.match(
-            new RegExp('Rs' + '\\s(\\w+)'),
-          )[1];
+          
+          let amount = getAmount(JSON.parse(smsList)[0].body)
+
           let date = moment(
             new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
           ).format('DD-MM-YYYY');
           setSms({...sms, notified: true});
-          console.log(sms, 'in sms.js');
 
           storeTransaction(JSON.parse(smsList)[0]);
           props.pushNotif();
@@ -117,9 +131,9 @@ const Sms = props => {
 
   useEffect(() => {
     BackgroundService.start(veryIntensiveTask, options);
-    BackgroundService.updateNotification({
-      taskDesc: 'New ExampleTask description',
-    }); // Only Android, iOS will ignore this call
+    // BackgroundService.updateNotification({
+    //   taskDesc: 'New ExampleTask description',
+    // }); // Only Android, iOS will ignore this call
   }, []);
 
   return (

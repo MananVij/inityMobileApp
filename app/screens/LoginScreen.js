@@ -16,10 +16,10 @@ import {
   Provider,
   TextInput,
 } from 'react-native-paper';
-import {authentication} from '../../config/keys';
+import {authentication, webClientId} from '../../config/keys';
 import colors from '../config/colors';
-import {getUserData} from '../../API/firebaseMethods';
-import {retrieveData, storeDataLocally} from '../functions/localStorage';
+import {getUserData, createSignupDoc} from '../../API/firebaseMethods';
+import {storeDataLocally} from '../functions/localStorage';
 import {
   GoogleSignin,
   GoogleSigninButton,
@@ -29,8 +29,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 function LoginScreen({navigation}) {
   GoogleSignin.configure({
-    webClientId:
-      '962761017947-pp2eao01h4lk7mpa5qhfa6hcn1er8a89.apps.googleusercontent.com',
+    webClientId: webClientId,
   });
 
   const [email, setEmail] = useState('');
@@ -88,6 +87,7 @@ function LoginScreen({navigation}) {
           .auth()
           .signInWithCredential(credential)
           .then(async user => {
+            console.log(user);
             if (user.additionalUserInfo.isNewUser) {
               const googleUser = {
                 displayName: user.user.displayName,
@@ -103,7 +103,7 @@ function LoginScreen({navigation}) {
       });
     } catch (error) {
       if (error.message == 'Sign in action cancelled')
-        ToastAndroid.show('User not signed up', ToastAndroid.SHORT);
+        ToastAndroid.show('User not signed in', ToastAndroid.SHORT);
       else {
         ToastAndroid.show('Some error Occured', ToastAndroid.SHORT);
         console.log(error);

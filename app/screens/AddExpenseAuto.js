@@ -23,9 +23,9 @@ import {
   Text,
 } from 'react-native-paper';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import colors from '../config/colors';
 
 export default function AddExpense(props) {
-
   const showToast = toastMsg => {
     ToastAndroid.show(toastMsg, ToastAndroid.SHORT);
   };
@@ -52,7 +52,7 @@ export default function AddExpense(props) {
         {
           text: 'YES',
           onPress: () => {
-            props.newSms([])
+            props.newSms([]);
           },
         },
       ]);
@@ -141,11 +141,7 @@ export default function AddExpense(props) {
           <Dialog.Actions>
             <Button
               onPress={() => {
-                addCategory(
-                  props.userData,
-                  newCategoryName,
-                  newCategoryEmoji,
-                );
+                addCategory(props.userData, newCategoryName, newCategoryEmoji);
                 hideDialog();
               }}>
               Done
@@ -260,12 +256,19 @@ export default function AddExpense(props) {
               }}>
               <Button
                 mode="contained-tonal"
-                style={{width: '48%', marginRight: '2%'}}>
+                style={{
+                  width: '48%',
+                  marginRight: '2%',
+                  backgroundColor: '#00B4D8',
+                }}
+                labelStyle={{color: 'white'}}>
                 Card 💳
               </Button>
               <Button
                 onPress={() => refRBSheet.current.open()}
-                style={{width: '48%'}}
+                style={{width: '48%', backgroundColor: '#00B4D8'}}
+                labelStyle={{color: 'white'}}
+                dark={false}
                 mode={'contained-tonal'}>
                 {category == ''
                   ? 'Select Category'
@@ -277,6 +280,7 @@ export default function AddExpense(props) {
               <TextInput
                 mode="outlined"
                 label="Memo"
+                theme={{color: {primary: colors.logoColor}}}
                 autoCapitalize="sentences"
                 style={{width: '48%', marginRight: '2%'}}
                 value={note}

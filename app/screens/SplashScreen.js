@@ -6,7 +6,7 @@ function SplashScreen({navigation}) {
     <SafeAreaView style={{flex: 1, justifyContent: 'center'}}>
       <Image
         source={require('../../assets/logo.gif')}
-        style={{alignSelf: 'center', width: '26.6%', height: '12.6%'}}
+        style={{alignSelf: 'center', width: '26.6%', height: '12.6%', resizeMode: 'center'}}
       />
     </SafeAreaView>
   );

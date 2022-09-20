@@ -54,18 +54,20 @@ function OnboardingScreen({navigation}) {
       onDone={() => navigation.navigate('LoginScreen')}
       pages={[
         {
-          backgroundColor: '#B9F8D3',
-          image: <Image source={require('../../assets/icons/piggy.png')} />,
+          backgroundColor: '#B8FFF9',
+          // backgroundColor: '#B9F8D3',
+          image: <Image source={require('../../assets/icons/piggy.png')} style={{marginBottom: '7%'}} />,
 
           title: (
             <Text
               style={{
-                fontSize: 130,
+                fontSize: 100,
                 color: '#2B2B2B',
-                marginBottom: 10,
+                // marginBottom: 10,
                 fontFamily: 'Lato-Black',
                 marginTop: '-25%',
-                paddingBottom: '3%'
+                paddingBottom: '3%',
+                paddingHorizontal: '5%'
               }}>
               Inity
             </Text>
@@ -78,40 +80,9 @@ function OnboardingScreen({navigation}) {
                 textAlign: 'center',
                 color: '#2B2B2B',
                 paddingHorizontal: 20,
-                textAlign: 'center'
-              }}>
-              The all in one personal finance app.
-            </Text>
-          ),
-        },
-        {
-          backgroundColor: 'lightyellow',
-          image: <Image source={require('../../assets/icons/piggy.png')} style={{marginTop: '-15%', width: '90%', marginBottom : '-5%'}} />,
-          title: (
-            <Text
-              style={{
-                fontSize: 40,
-                color: '#171010',
-                marginBottom: 10,
-                fontFamily: 'Lato-Black',
-                marginLeft: '-5%',
-                marginBottom: '5%'
-              }}>
-              track your money.
-            </Text>
-            
-          ),
-          subtitle: (
-            <Text
-              style={{
-                fontSize: 20,
-                fontFamily: 'Poppins-Medium',
                 textAlign: 'center',
-                color: '#2B2B2B',
-                paddingHorizontal: '8%',
-                textAlign: 'left'
               }}>
-              Track your money hasslefree and {'\n'} in much more simplified manner!
+              expense tracking like never before!
             </Text>
           ),
         },
@@ -119,7 +90,8 @@ function OnboardingScreen({navigation}) {
           backgroundColor: 'lightgreen',
           image: (
             <Image
-              source={require('../../assets/icons/rocket.png')}
+              source={require('../../assets/onboarding/card.png')}
+              // source={require('../../assets/icons/rocket.png')}
               style={{height: '75%', width: '75%', marginTop: '-20%'}}
             />
           ),
@@ -127,14 +99,16 @@ function OnboardingScreen({navigation}) {
           title: (
             <Text
               style={{
-                fontSize: 40,
+                fontSize: 35,
                 color: '#171010',
                 marginBottom: 10,
                 fontFamily: 'Lato-Black',
                 marginTop: '-58%',
-                marginBottom: '5%'
+                marginBottom: '5%',
+                paddingHorizontal: '5%',
+                textAlign: 'center',
               }}>
-              set your goals.
+              Online transactions are tracked by us so you don't have to.
             </Text>
           ),
           subtitle: (
@@ -145,32 +119,36 @@ function OnboardingScreen({navigation}) {
                 textAlign: 'center',
                 color: '#2B2B2B',
                 paddingHorizontal: '5%',
-                textAlign: 'left'
+                textAlign: 'left',
               }}>
-              Set your financial goals & we'll make sure that you achieve them
-              easily.
+              {/* online expenses are tracked by us so you don't have to. */}
+              {/* Set your financial goals & we'll make sure that you achieve them
+              easily. */}
             </Text>
           ),
         },
         {
-          backgroundColor: '#E8F9FD',
+          backgroundColor: '#90E0EF',
           image: (
             <Image
-              source={require('../../assets/icons/commodities.png')}
-              style={{marginTop: '-15%', width: '90%', marginBottom : '-5%'}}
+              source={require('../../assets/onboarding/cart.png')}
+              style={{height: '75%', width: '75%', marginTop: '-20%'}}
             />
           ),
 
           title: (
             <Text
               style={{
-                fontSize: 40,
+                fontSize: 35,
                 color: '#171010',
                 marginBottom: 10,
                 fontFamily: 'Lato-Black',
+                marginTop: '-58%',
                 marginBottom: '5%',
+                paddingHorizontal: '5%',
+                textAlign: 'center',
               }}>
-              easy & simplified investing.
+              Adding expenses manually is still an option!
             </Text>
           ),
           subtitle: (
@@ -180,11 +158,80 @@ function OnboardingScreen({navigation}) {
                 fontFamily: 'Poppins-Medium',
                 textAlign: 'center',
                 color: '#2B2B2B',
-                paddingHorizontal: 20,
-                textAlign: 'left'
+                paddingHorizontal: '5%',
+                textAlign: 'left',
+              }}></Text>
+          ),
+        },
+        {
+          backgroundColor: 'lightgreen',
+          image: (
+            <Image
+              source={require('../../assets/onboarding/report.png')}
+              style={{height: '75%', width: '75%', marginTop: '-20%'}}
+            />
+          ),
+
+          title: (
+            <Text
+              style={{
+                fontSize: 35,
+                color: '#171010',
+                marginBottom: 10,
+                fontFamily: 'Lato-Black',
+                marginTop: '-58%',
+                marginBottom: '5%',
+                paddingHorizontal: '5%',
+                textAlign: 'center',
               }}>
-              Invest in stocks, commodities & indices in a new manner.
+              Find out how much you're spending in a detailed report.
             </Text>
+          ),
+          subtitle: (
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: 'Poppins-Medium',
+                textAlign: 'center',
+                color: '#2B2B2B',
+                paddingHorizontal: '5%',
+                textAlign: 'left',
+              }}></Text>
+          ),
+        },
+        {
+          backgroundColor: '#90E0EF',
+          image: (
+            <Image
+              source={require('../../assets/onboarding/plane.png')}
+              style={{height: '75%', width: '75%', marginTop: '-20%'}}
+            />
+          ),
+
+          title: (
+            <Text
+              style={{
+                fontSize: 35,
+                color: '#171010',
+                marginBottom: 10,
+                fontFamily: 'Lato-Black',
+                marginTop: '-50%',
+                paddingHorizontal: '5%',
+                textAlign: 'center',
+              }}>
+              Getting Excited? Come onboard to save and grow!
+            </Text>
+          ),
+          subtitle: (
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: 'Poppins-Medium',
+                textAlign: 'center',
+                color: '#2B2B2B',
+                paddingHorizontal: '5%',
+                textAlign: 'left',
+              }}></Text>
           ),
         },
       ]}

@@ -95,17 +95,18 @@ export default function AddExpense() {
 
   const categoryButton = (categoryName, categoryEmoji, index) => {
     return (
-      <Button
-        key={index}
-        mode={category == categoryName ? 'contained' : 'contained-tonal'}
-        style={styles.categoryButton}
-        onPress={() => {
-          setCategory(categoryName);
-          setCategoryEmoji(categoryEmoji);
-          refRBSheet.current.close();
-        }}>
-        {categoryEmoji + ' ' + categoryName}
-      </Button>
+      <View key={index}>
+        <Button
+          mode={category == categoryName ? 'contained' : 'contained-tonal'}
+          style={styles.categoryButton}
+          onPress={() => {
+            setCategory(categoryName);
+            setCategoryEmoji(categoryEmoji);
+            refRBSheet.current.close();
+          }}>
+          {categoryEmoji + ' ' + categoryName}
+        </Button>
+      </View>
     );
   };
 
@@ -203,6 +204,7 @@ export default function AddExpense() {
               fontWeight: '700',
               fontSize: 40,
               paddingTop: '30%',
+              color: 'black',
             }}
             variant="headlineSmall">
             Expense
@@ -251,12 +253,19 @@ export default function AddExpense() {
               }}>
               <Button
                 mode="contained-tonal"
-                style={{width: '48%', marginRight: '2%'}}>
+                style={{
+                  width: '48%',
+                  marginRight: '2%',
+                  backgroundColor: '#00B4D8',
+                }}
+                labelStyle={{color: 'white'}}>
                 Cash 💸
               </Button>
               <Button
                 onPress={() => refRBSheet.current.open()}
-                style={{width: '48%'}}
+                style={{width: '48%', backgroundColor: '#00B4D8'}}
+                labelStyle={{color: 'white'}}
+                dark={false}
                 mode={'contained-tonal'}>
                 {category == ''
                   ? 'Select Category'
@@ -268,6 +277,7 @@ export default function AddExpense() {
               <TextInput
                 mode="outlined"
                 label="Memo"
+                theme={{colors: {primary: colors.logoColor}}}
                 autoCapitalize="sentences"
                 style={{width: '48%', marginRight: '2%'}}
                 value={note}
@@ -299,11 +309,13 @@ export default function AddExpense() {
             </View>
           </View>
           <Button
+            labelStyle={{color: 'white'}}
             mode="contained"
             onPress={UploadDocs}
             style={{
               marginTop: '5%',
               marginBottom: '4%',
+              backgroundColor: colors.logoColor,
             }}>
             Add Expense
           </Button>

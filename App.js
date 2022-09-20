@@ -1,9 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  StyleSheet,
-  PermissionsAndroid,
-  ToastAndroid,
-} from 'react-native';
+import {StyleSheet, PermissionsAndroid, ToastAndroid, Text} from 'react-native';
 
 import SmsAndroid from 'react-native-get-sms-android';
 import NetInfo from '@react-native-community/netinfo';
@@ -61,54 +57,54 @@ const requestSMSPermission = async () => {
     console.warn(err);
   }
 };
-const requestBgLocation = async () => {
-  try {
-    const granted = await PermissionsAndroid.request(
-      // PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-      {
-        title: 'Inity requires Location Permission',
-        message:
-          'We needs access to your location ' +
-          'so you we take track offline expenses.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      // console.log('Background Location Permission Granted');
-    } else {
-      console.log('Background Location Permission denied');
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-};
-const requestLocationPermission = async () => {
-  try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      // PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION],
-      {
-        title: 'Inity requires Location Permission',
-        message:
-          'We needs access to your location ' +
-          'so you we take track offline expenses.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      // console.log('Location Permission Granted');
-    } else {
-      console.log('Location Permission denied');
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-};
+// const requestBgLocation = async () => {
+//   try {
+//     const granted = await PermissionsAndroid.request(
+//       // PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+//       PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+//       {
+//         title: 'Inity requires Location Permission',
+//         message:
+//           'We needs access to your location ' +
+//           'so you we take track offline expenses.',
+//         buttonNeutral: 'Ask Me Later',
+//         buttonNegative: 'Cancel',
+//         buttonPositive: 'OK',
+//       },
+//     );
+//     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+//       // console.log('Background Location Permission Granted');
+//     } else {
+//       console.log('Background Location Permission denied');
+//     }
+//   } catch (err) {
+//     console.warn(err);
+//   }
+// };
+// const requestLocationPermission = async () => {
+//   try {
+//     const granted = await PermissionsAndroid.request(
+//       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+//       // PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION],
+//       {
+//         title: 'Inity requires Location Permission',
+//         message:
+//           'We needs access to your location ' +
+//           'so you we take track offline expenses.',
+//         buttonNeutral: 'Ask Me Later',
+//         buttonNegative: 'Cancel',
+//         buttonPositive: 'OK',
+//       },
+//     );
+//     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+//       // console.log('Location Permission Granted');
+//     } else {
+//       console.log('Location Permission denied');
+//     }
+//   } catch (err) {
+//     console.warn(err);
+//   }
+// };
 
 export default function App() {
   const pushNotification = data => {
@@ -122,11 +118,12 @@ export default function App() {
   const [amount, setAmount] = useState('');
   const [user, setUser] = useState();
   const [loading, setLoading] = useState(true);
+  const [localData, setLocalData] = useState([]);
 
   useEffect(() => {
     requestSMSPermission();
-    requestBgLocation();
-    requestLocationPermission();
+    // requestBgLocation();
+    // requestLocationPermission();
   }, []);
   useEffect(() => {
     NetInfo.addEventListener(state => {
@@ -142,20 +139,16 @@ export default function App() {
 
   useEffect(() => {
     BackgroundService.start(veryIntensiveTask, options);
-    BackgroundService.updateNotification({
-      taskDesc: 'New ExampleTask description',
-    }); // Only Android, iOS will ignore this call
   }, []);
 
   const setUserDataFxn = async () => {
     const localData = await retrieveData('userData');
+    setLocalData(localData);
     if (localData[0]) {
       if (isOnline) {
-        console.log('in if');
         const data = await getUserData(localData[0][0].userDetails.uid);
         setUserData(data);
       } else if (isOnline == false) {
-        console.log('manan in else');
         const data = await retrieveData('userData');
         setUserData(data[0]);
         ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
@@ -171,11 +164,24 @@ export default function App() {
     }
   });
 
+  const getAmount = smsBody => {
+    if (smsBody.includes('Rs.')) {
+      const arr = smsBody.split('Rs.')[1]?.split(' ');
+      return arr[0] == '' ? arr[1] : arr[0];
+    } else if (smsBody.includes('Rs')) {
+      const arr = smsBody.split('Rs')[1]?.split(' ');
+
+      return arr[0] == '' ? arr[1] : arr[0];
+    } else if (smsBody.includes('INR')) {
+      const arr = smsBody.split('INR')[1]?.split(' ');
+      return arr[0] == '' ? arr[1] : arr[0];
+    }
+  };
+
   const checkMsg = () => {
     const filter = {
       box: 'inbox',
-      address: new RegExp('w*BK\b'),
-      read: 0,
+      read: 1,
     };
     SmsAndroid.list(
       JSON.stringify(filter),
@@ -187,9 +193,7 @@ export default function App() {
           JSON.parse(smsList)[0]?.body.includes('debited') ||
           JSON.parse(smsList)[0]?.body.includes('spent')
         ) {
-          let amount = JSON.parse(smsList)[0].body.match(
-            new RegExp('Rs' + '\\s(\\w+)'),
-          )[1];
+          const amount = getAmount(JSON.parse(smsList)[0].body);
           let date = moment(
             new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
           ).format('DD-MM-YYYY');
@@ -201,38 +205,37 @@ export default function App() {
     );
   };
 
-  const reverseGeocode = async (lat, long) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}&zoom=18&addressdetails=1`,
-      );
-      const json = await response.json();
-      // console.log('reverse geocode: ', json);
-      return json.movies;
-    } catch (error) {
-      console.error('error in reverse geocode:', error);
-    }
-  };
+  // const reverseGeocode = async (lat, long) => {
+  //   try {
+  //     const response = await fetch(
+  //       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}&zoom=18&addressdetails=1`,
+  //     );
+  //     const json = await response.json();
+  //     // console.log('reverse geocode: ', json);
+  //     return json.movies;
+  //   } catch (error) {
+  //     console.error('error in reverse geocode:', error);
+  //   }
+  // };
 
   const sleep = time =>
     new Promise(resolve => setTimeout(() => resolve(), time));
 
   const veryIntensiveTask = async taskDataArguments => {
-    // infinite loop for tracking sms
     const {delay} = taskDataArguments;
     await new Promise(async resolve => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
         checkMsg();
-        Geolocation.getCurrentPosition(
-          info => {
-            // console.log(info.coords.latitude, info.coords.latitude)
-            // reverseGeocode(info.coords.latitude, info.coords.longitude)
-          },
-          e => {
-            console.log(e.code, e.message);
-          },
-          {enableHighAccuracy: true},
-        );
+        // Geolocation.getCurrentPosition(
+        //   info => {
+        //     // console.log(info.coords.latitude, info.coords.latitude)
+        //     // reverseGeocode(info.coords.latitude, info.coords.longitude)
+        //   },
+        //   e => {
+        //     console.log(e.code, e.message);
+        //   },
+        //   {enableHighAccuracy: true},
+        // );
         await sleep(delay);
       }
     });
@@ -241,13 +244,12 @@ export default function App() {
   const options = {
     taskName: 'Inity',
     taskTitle: 'Inity',
-    taskDesc: 'ExampleTask description',
+    taskDesc: 'Recording your Transactions',
     taskIcon: {
       name: 'ic_launcher',
       type: 'mipmap',
     },
-    color: '#ff00ff',
-    linkingURI: 'yourSchemeHere://chat/jane', // See Deep Linking for more info
+    linkingURI: 'https://inityappindia.page.link/verify', // See Deep Linking for more info
     parameters: {
       delay: 1000,
     },
@@ -256,9 +258,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+        {/* {user && userData[0] && userData.length? ( */}
         {!loading && isOnline != undefined ? (
           <>
-            {user && userData[0] && userData.length ? (
+            {/* {user && (userData[0] != undefined )? ( */}
+             {user && userData[0] && userData.length ? (
               <>
                 {!sms[0] ? (
                   <>
@@ -312,15 +316,17 @@ export default function App() {
                   <>
                     <Stack.Screen
                       options={{headerShown: false}}
-                      name="NewScreen"
-                      component={NewScreen}
-                      initialParams={{
-                        userData: userData[0],
-                        amount: amount,
-                        date: date,
-                        setSms: setSms,
-                      }}
-                    />
+                      name="NewScreen">
+                      {props => (
+                        <NewScreen
+                          {...props}
+                          userData={userData[0]}
+                          amount={amount}
+                          date={date}
+                          setSms={setSms}
+                        />
+                      )}
+                    </Stack.Screen>
                   </>
                 )}
               </>

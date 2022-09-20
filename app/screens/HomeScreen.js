@@ -86,7 +86,7 @@ export default function HomeScreen({navigation}, props) {
 
   const setUserDataFxn = async () => {
     try {
-      const data = await getUserData();
+      const data = await getUserData(route?.params.userData[0].userDetails.uid);
       if (data) setUserData(data);
       else ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
     } catch (error) {
@@ -226,11 +226,11 @@ export default function HomeScreen({navigation}, props) {
   const monthlyContainer = () => {
     return (
       <Card
-        // onPress={() => {
-        //   navigation.navigate('ExpenseTrackingScreen', {
-        //     userData: route.params.userData,
-        //   });
-        // }}
+        onPress={() => {
+          navigation.navigate('ExpenseTrackingScreen', {
+            userData: route.params.userData,
+          });
+        }}
         style={{
           // backgroundColor: '#f7f7f7',
           borderRadius: 20,
@@ -400,7 +400,7 @@ export default function HomeScreen({navigation}, props) {
           flex: 1,
           // backgroundColor: 'white'
         }}>
-        <GoogleAd></GoogleAd>
+        {/* <GoogleAd/> */}
         <ScrollView
           bounces={false}
           refreshControl={
@@ -413,7 +413,7 @@ export default function HomeScreen({navigation}, props) {
           // style={{marginBottom: '10%'}}
           >
             {monthlyContainer()}
-            {goalSection()}
+            {/* {goalSection()} */}
             <View style={{marginLeft: 20, marginTop: 30, marginRight: 20}}>
               <Text style={{fontWeight: '600', fontSize: 18}}>Today</Text>
               {userData[0] != null &&
@@ -493,7 +493,9 @@ export default function HomeScreen({navigation}, props) {
           </TouchableOpacity>
           {/* <GoogleAd/> */}
         </ScrollView>
+        <GoogleAd/>
         {lastPart()}
+
       </SafeAreaView>
     );
   else

@@ -14,27 +14,27 @@ import {
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
-  updateProfile
+  updateProfile,
 } from 'firebase/auth';
 import {firebase} from '@react-native-firebase/auth';
-import {authentication} from '../../config/keys';
+import {authentication, webClientId} from '../../config/keys';
 import {getUserData} from '../../API/firebaseMethods';
 import {createSignupDoc} from '../../API/firebaseMethods';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {signOut} from 'firebase/auth';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import { storeDataLocally } from '../functions/localStorage';
+import {storeDataLocally} from '../functions/localStorage';
 
 function LoginScreen({navigation}) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loader, setLoader] = useState(false);
+  const [googleLoader, setGoogleLoader] = useState(false);
   const [dialogMsg, setDialogMsg] = useState('');
 
   GoogleSignin.configure({
-    webClientId:
-      '962761017947-pp2eao01h4lk7mpa5qhfa6hcn1er8a89.apps.googleusercontent.com',
+    webClientId: webClientId,
   });
 
   const [visible, setVisible] = useState(false);
@@ -68,7 +68,7 @@ function LoginScreen({navigation}) {
             });
 
             await sendEmailVerification(authentication.currentUser, {
-              url: 'https://inityapp.page.link/download',
+              url: 'https://inityappindia.page.link/verify',
               handleCodeInApp: true,
             });
             console.log('Email verification link sent');
@@ -126,7 +126,7 @@ function LoginScreen({navigation}) {
               await createSignupDoc(googleUser);
             }
             const userData = await getUserData(user.user.uid);
-            storeDataLocally("userData", userData)
+            storeDataLocally('userData', userData);
             navigation.replace('HomeScreen', {userData: userData});
 
             // await fetchSignInMethodsForEmail(authentication, data.user.email)
@@ -253,8 +253,11 @@ function LoginScreen({navigation}) {
           <Button
             style={styles.button}
             labelStyle={styles.buttonText}
+            loading={googleLoader}
             onPress={async () => {
+              setGoogleLoader(true);
               await googleSignup();
+              setGoogleLoader(false);
             }}>
             Sign Up With Google
           </Button>

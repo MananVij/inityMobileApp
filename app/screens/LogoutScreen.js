@@ -15,7 +15,8 @@ export default function Dashboard({navigation}) {
   const route = useRoute();  
   GoogleSignin.configure({
     webClientId:
-      '962761017947-pp2eao01h4lk7mpa5qhfa6hcn1er8a89.apps.googleusercontent.com',
+    '610375507483-77ini3v81sfaaq4itq1a47q0ihofrrvo.apps.googleusercontent.com'
+      // '962761017947-pp2eao01h4lk7mpa5qhfa6hcn1er8a89.apps.googleusercontent.com',
   });
 
   const handlePress = async () => {
@@ -62,7 +63,7 @@ export default function Dashboard({navigation}) {
       </View>
       <Image
         source={require('../../assets/icons/logout.png')}
-        style={{width: '100%', height: '70%', alignSelf: 'center'}}></Image>
+        style={{width: '100%', height: '70%', alignSelf: 'center', resizeMode: 'contain'}}></Image>
       <Button
         style={styles.button}
         labelStyle={styles.buttonText}

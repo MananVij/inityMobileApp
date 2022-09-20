@@ -6,24 +6,28 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
+  Image,
   Animated,
+  useWindowDimensions,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {collection, getDocs} from 'firebase/firestore/lite';
 import {userId, db} from '../../config/keys';
-import distinctColors from 'distinct-colors';
 import rgbHex from 'rgb-hex';
 
 import {Text} from 'react-native-paper';
 
-import {VictoryPie} from 'victory-native';
+import {VictoryPie, VictoryLabel, VictoryLegend} from 'victory-native';
 import colors from '../config/colors';
 import {useRoute} from '@react-navigation/native';
 import GoogleAd from '../components/GoogleAd';
-
+import Svg from 'react-native-svg';
 
 // Data used to make the animate prop work
 const ExpenseTrackingScreen = props => {
+  const insets = useSafeAreaInsets();
   const route = useRoute();
+  const {height, width} = useWindowDimensions();
 
   const d = new Date();
   const monthNames = [
@@ -43,18 +47,7 @@ const ExpenseTrackingScreen = props => {
   const [totalExpense, setTotalExpense] = useState([]);
   const [categoryExpenses, setCategoryExpense] = useState();
   const [pieChartData, setPieChartData] = useState({x: 0, y: 1000});
-
-  var palette = distinctColors({
-    count: Object.entries(route?.params.userData[0].categories).length,
-    hueMin: 50,
-    hueMax: 250,
-    chromaMin: 40, 
-    chromaMax: 150
-  });
-  var colorPallete = [];
-  palette.map(el => {
-    colorPallete.push('#' + String(rgbHex(el._rgb[0], el._rgb[1], el._rgb[2])));
-  });
+  const [pieChartLegend, setPieChartLegend] = useState([]);
 
   useEffect(() => {
     let arr = [];
@@ -80,9 +73,12 @@ const ExpenseTrackingScreen = props => {
     setCategoryExpense(ans);
 
     let pie = [];
+    let legend = [];
     ans.map(el => {
       pie.push({x: Object.keys(el), y: Number(Object.values(el))});
+      legend.push({name: Object.keys(el)[0]});
     });
+    setPieChartLegend(legend);
     setPieChartData(pie);
   }, []);
 
@@ -92,64 +88,9 @@ const ExpenseTrackingScreen = props => {
     );
   }, []);
 
-  const topBar = () => {
-    return (
-      <View style={styles.topContainer}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Text style={styles.topBarText}>My Expenses</Text>
-        </View>
-      </View>
-    );
-  };
-
   let categoryListHeightAnimationValue = useRef(
     new Animated.Value(200),
   ).current;
-
-  const renderItem = ({item}) => {
-    return (
-      <TouchableOpacity activeOpacity={0.7}>
-        <View
-          style={{
-            width: '100%',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            backgroundColor: '#f7f7f7',
-            shadowColor: '#000',
-            marginBottom: '5%',
-            shadowOffset: {height: 2, width: 4},
-            shadowOpacity: 0.2,
-            borderRadius: 4,
-          }}>
-          <View
-            style={{flexDirection: 'row', width: '50%', alignItems: 'center'}}>
-            <View
-              style={{
-                backgroundColor: colorPallete,
-                width: 18,
-                height: 18,
-                borderRadius: 6,
-                marginRight: '5%',
-              }}
-            />
-            <Text style={{fontWeight: 'bold', fontSize: 20}}>
-              {Object.keys(item)}
-            </Text>
-          </View>
-          <View>
-            <Text style={{fontWeight: '500', fontSize: 20}}>
-              {Object.values(item)}
-            </Text>
-          </View>
-          <View>
-            <Text style={{fontWeight: '500', fontSize: 20, paddingLeft: '18%'}}>
-              {((Object.values(item) / totalExpense) * 100).toPrecision(2)}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
 
   var date = new Date().getMonth();
   let monthlyDataExpanded = Object.values(
@@ -157,73 +98,6 @@ const ExpenseTrackingScreen = props => {
   ).filter(el => {
     return el[0].date.split('-')[1] - 1 == date;
   });
-
-  const pieChart = () => {
-    return (
-      <View style={{alignItems: 'center'}}>
-        <View style={{alignContent: 'center'}}>
-          <VictoryPie
-            animate={{
-              // easing: 'exp', 
-              // onLoad: {
-              //   sta
-              // },
-            duration: 1000,
-            
-          }}
-          
-            padAngle={2}
-            startAngle={90}
-            endAngle={450}
-            data={pieChartData}
-            colorScale={'heatmap'}
-            // colorScale={colorPallete}
-            // labelRadius={170}
-            innerRadius={70}
-            style={{
-              labels: {
-                fontSize: 0,
-              },
-            }}
-          />
-          <View
-            style={{
-              position: 'absolute',
-              top: '43%',
-              left: '39.5%',
-              alignItems: 'center',
-            }}>
-            <Text style={{fontSize: 18, fontWeight: 'bold'}}>Expenses</Text>
-            <Text style={{fontSize: 23, fontWeight: 'bold'}}>
-              {totalExpense}
-            </Text>
-            <Text style={styles.monthName}>
-              {monthNames[d.getMonth()].charAt(0).toUpperCase() +
-                monthNames[d.getMonth()].slice(1)}
-            </Text>
-          </View>
-        </View>
-        <View style={{marginTop: '7%', marginHorizontal: '5%'}}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              marginBottom: '3%',
-            }}>
-            <Text style={{fontSize: 17, fontWeight: '700'}}>Amount (₹)</Text>
-            <Text style={{fontSize: 17, fontWeight: '700', marginLeft: '5%'}}>
-              Percentage
-            </Text>
-          </View>
-          <FlatList
-            data={categoryExpenses}
-            renderItem={renderItem}
-            keyExtractor={item => item.id}
-          />
-        </View>
-      </View>
-    );
-  };
 
   const [userExpenses, setUserExpenses] = useState([]);
   const getExpenses = async () => {
@@ -242,17 +116,191 @@ const ExpenseTrackingScreen = props => {
   };
   getExpenses();
 
+  const topBar = () => {
+    return (
+      <View style={styles.topContainer}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <Text style={styles.topBarText}>My Expenses</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderItem = ({item}) => {
+    return (
+      <TouchableOpacity activeOpacity={0.7}>
+        <View
+          style={{
+            width: '100%',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            backgroundColor: '#f7f7f7',
+            shadowColor: '#000',
+            marginBottom: '5%',
+            shadowOffset: {height: 2, width: 4},
+            shadowOpacity: 0.2,
+            borderRadius: 4,
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '50%',
+              alignItems: 'center',
+              paddingHorizontal: '2%',
+            }}>
+            <Text style={{fontWeight: 'bold', fontSize: 20}}>
+              {Object.keys(item)}
+            </Text>
+          </View>
+          <View>
+            <Text style={{fontWeight: '500', fontSize: 20}}>
+              {Object.values(item)}
+            </Text>
+          </View>
+          <View>
+            <Text style={{fontWeight: '500', fontSize: 20, paddingLeft: '18%'}}>
+              {((Object.values(item) / totalExpense) * 100).toPrecision(2) == 100 ? 100 : ((Object.values(item) / totalExpense) * 100).toPrecision(2)}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const pieChart = () => {
+    return (
+      <View
+        style={{
+          alignContent: 'center',
+          justifyContent: 'center',
+          flexDirection: 'row',
+        }}>
+        <Svg>
+          <VictoryPie
+            animate={{
+              easing: 'exp',
+            }}
+            padAngle={1}
+            startAngle={90}
+            endAngle={450}
+            data={pieChartData}
+            colorScale={'qualitative'}
+            labelRadius={95}
+            innerRadius={0.2 * width}
+            radius={0.43 * width}
+            style={{
+              labels: {
+                fontSize: 13,
+                fill: 'white',
+                fontWeight: '700',
+              },
+            }}
+          />
+          <View>
+            <VictoryLabel
+              textAnchor="middle"
+              style={{fontSize: 25, fontWeight: '600'}}
+              x={width*0.5}
+              y={height*0.3}
+              text={`Expenses\n${totalExpense}`}
+            />
+          </View>
+        </Svg>
+      </View>
+    );
+  };
+
+  const flatListExp = () => {
+    return (
+      <View style={{marginBottom: '15%'}}>
+        <View
+          style={{
+            // marginTop: '5%',
+            marginHorizontal: '5%',
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              marginBottom: '3%',
+            }}>
+            <Text style={{fontSize: 17, fontWeight: '700'}}>Amount (₹)</Text>
+            <Text style={{fontSize: 17, fontWeight: '700', marginLeft: '5%'}}>
+              Percentage
+            </Text>
+          </View>
+          <FlatList data={categoryExpenses} renderItem={renderItem} />
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <SafeAreaView style={styles.console}>
-      <ScrollView bounces={false}>
-      <GoogleAd/>
+    <SafeAreaView
+      style={{
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        backgroundColor: colors.backgroundColor,
+        flex: 1,
+      }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{flexGrow: 1}}>
         {topBar()}
-        {pieChart()}
+        {pieChartData[0] ? (
+          <>
+            {pieChart()}
+            <Text style={styles.monthName}>
+              {monthNames[d.getMonth()].charAt(0).toUpperCase() +
+                monthNames[d.getMonth()].slice(1)}
+            </Text>
+            <View>
+              <VictoryLegend
+                colorScale={'qualitative'}
+                height={80}
+                gutter={40}
+                x={20}
+                itemsPerRow={2}
+                groupComponent={2}
+                // orientation={'horizontal'}
+                data={pieChartLegend}
+              />
+            </View> 
+            {flatListExp()}
+          </>
+        ) : (
+          <>
+            <Image
+              source={require('../../assets/icons/no-expense.png')}
+              style={{
+                width: '100%',
+                height: 300,
+                resizeMode: 'contain',
+              }}></Image>
+            <Text
+              style={{
+                position: 'absolute',
+                bottom: '10%',
+                fontSize: 23,
+                fontWeight: '700',
+                alignSelf: 'center',
+                color: colors.logoColor,
+              }}>
+              wohooo! no expense.
+            </Text>
+          </>
+        )}
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+          }}>
+          <GoogleAd />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   console: {
@@ -263,12 +311,10 @@ const styles = StyleSheet.create({
   // Top Container
   topContainer: {
     backgroundColor: colors.backgroundColor,
-    // height: '27%',
-    // elevation: 2,
     paddingLeft: '3%',
     flexDirection: 'column',
     justifyContent: 'center',
-    marginTop: '7%',
+    marginTop: '5%',
   },
   backIcon: {
     height: 38,
@@ -283,7 +329,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   topBarText: {
-    marginTop: '10%',
+    // marginTop: '10%',
     marginLeft: '5%',
     fontSize: 23,
     fontWeight: '800',
@@ -293,7 +339,8 @@ const styles = StyleSheet.create({
   monthName: {
     fontWeight: '700',
     fontSize: 22,
-    marginTop: '145%',
+    alignSelf: 'center',
+    marginBottom: '5%',
   },
   dorpdownIcon: {
     height: 25,
