@@ -199,6 +199,7 @@ export default function HomeScreen({navigation}, props) {
           style={{
             fontSize: 25,
             fontWeight: '800',
+            color: colors.secondaryHeading
           }}>
           Hello,{' '}
           {userData[0] == null
@@ -232,7 +233,6 @@ export default function HomeScreen({navigation}, props) {
           });
         }}
         style={{
-          // backgroundColor: '#f7f7f7',
           borderRadius: 20,
           marginHorizontal: '5%',
         }}>
@@ -354,7 +354,6 @@ export default function HomeScreen({navigation}, props) {
         <Card
           style={{
             borderRadius: 20,
-            // backgroundColor: '#f7f7f7',
             height: 60,
             width: '90%',
           }}>
@@ -398,15 +397,13 @@ export default function HomeScreen({navigation}, props) {
       <SafeAreaView
         style={{
           flex: 1,
-          // backgroundColor: 'white'
         }}>
-        {/* <GoogleAd/> */}
         <ScrollView
           bounces={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }>
-          <StatusBar backgroundColor={colors.greyColor}></StatusBar>
+          <StatusBar backgroundColor={colors.backgroundColor}></StatusBar>
           {/* {' '} */}
           {topBar()}
           <View
@@ -491,9 +488,8 @@ export default function HomeScreen({navigation}, props) {
               Explore More →
             </Text>
           </TouchableOpacity>
-          {/* <GoogleAd/> */}
         </ScrollView>
-        <GoogleAd/>
+        {/* <GoogleAd/> */}
         {lastPart()}
 
       </SafeAreaView>

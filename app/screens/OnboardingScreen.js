@@ -92,7 +92,7 @@ function OnboardingScreen({navigation}) {
             <Image
               source={require('../../assets/onboarding/card.png')}
               // source={require('../../assets/icons/rocket.png')}
-              style={{height: '75%', width: '75%', marginTop: '-20%'}}
+              style={{height: '75%', width: '75%', marginTop: '-20%', resizeMode: 'contain'}}
             />
           ),
 
@@ -132,7 +132,7 @@ function OnboardingScreen({navigation}) {
           image: (
             <Image
               source={require('../../assets/onboarding/cart.png')}
-              style={{height: '75%', width: '75%', marginTop: '-20%'}}
+              style={{height: '75%', width: '75%', marginTop: '-20%', resizeMode: 'contain'}}
             />
           ),
 
@@ -168,7 +168,7 @@ function OnboardingScreen({navigation}) {
           image: (
             <Image
               source={require('../../assets/onboarding/report.png')}
-              style={{height: '75%', width: '75%', marginTop: '-20%'}}
+              style={{height: '75%', width: '75%', marginTop: '-20%', resizeMode: 'stretch'}}
             />
           ),
 
@@ -204,7 +204,7 @@ function OnboardingScreen({navigation}) {
           image: (
             <Image
               source={require('../../assets/onboarding/plane.png')}
-              style={{height: '75%', width: '75%', marginTop: '-20%'}}
+              style={{height: '75%', width: '75%', marginTop: '-20%', resizeMode: 'stretch'}}
             />
           ),
 

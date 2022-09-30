@@ -87,7 +87,6 @@ function LoginScreen({navigation}) {
           .auth()
           .signInWithCredential(credential)
           .then(async user => {
-            console.log(user);
             if (user.additionalUserInfo.isNewUser) {
               const googleUser = {
                 displayName: user.user.displayName,
@@ -206,8 +205,8 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 25,
     fontWeight: 'bold',
-    textAlign: 'left',
     marginBottom: '5%',
+    color: colors.secondaryHeading
   },
   forgotPasswordText: {
     marginTop: '2%',

@@ -140,7 +140,7 @@ export default function WeekSeg() {
           )}
         </View>
         <View style={{marginTop: '2%'}}>
-          <GoogleAd />
+          {/* <GoogleAd /> */}
         </View>
       </ScrollView>
     </SafeAreaView>

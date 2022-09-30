@@ -36,6 +36,7 @@ export default class NewScreen extends Component {
         amount={this.props.amount}
         newSms={this.props.setSms}
         date={this.props.date}
+        msg={this.props.msg}
         userData={[this.props.userData]}
         ></Sms>
     );

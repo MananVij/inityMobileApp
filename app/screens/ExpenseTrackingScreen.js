@@ -15,7 +15,7 @@ import {collection, getDocs} from 'firebase/firestore/lite';
 import {userId, db} from '../../config/keys';
 import rgbHex from 'rgb-hex';
 
-import {Text} from 'react-native-paper';
+import {Card, Text, Title, Paragraph} from 'react-native-paper';
 
 import {VictoryPie, VictoryLabel, VictoryLegend} from 'victory-native';
 import colors from '../config/colors';
@@ -60,7 +60,6 @@ const ExpenseTrackingScreen = props => {
         arr2.push({[ele.category]: ele.amount});
       });
     });
-
     arr.map(el => {
       let sum = 0;
       arr2.map(ele => {
@@ -81,7 +80,6 @@ const ExpenseTrackingScreen = props => {
     setPieChartLegend(legend);
     setPieChartData(pie);
   }, []);
-
   useEffect(() => {
     setTotalExpense(
       route?.params.userData[0].monthlyExpense[monthNames[d.getMonth()]],
@@ -126,47 +124,6 @@ const ExpenseTrackingScreen = props => {
     );
   };
 
-  const renderItem = ({item}) => {
-    return (
-      <TouchableOpacity activeOpacity={0.7}>
-        <View
-          style={{
-            width: '100%',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            backgroundColor: '#f7f7f7',
-            shadowColor: '#000',
-            marginBottom: '5%',
-            shadowOffset: {height: 2, width: 4},
-            shadowOpacity: 0.2,
-            borderRadius: 4,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '50%',
-              alignItems: 'center',
-              paddingHorizontal: '2%',
-            }}>
-            <Text style={{fontWeight: 'bold', fontSize: 20}}>
-              {Object.keys(item)}
-            </Text>
-          </View>
-          <View>
-            <Text style={{fontWeight: '500', fontSize: 20}}>
-              {Object.values(item)}
-            </Text>
-          </View>
-          <View>
-            <Text style={{fontWeight: '500', fontSize: 20, paddingLeft: '18%'}}>
-              {((Object.values(item) / totalExpense) * 100).toPrecision(2) == 100 ? 100 : ((Object.values(item) / totalExpense) * 100).toPrecision(2)}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   const pieChart = () => {
     return (
       <View
@@ -200,8 +157,8 @@ const ExpenseTrackingScreen = props => {
             <VictoryLabel
               textAnchor="middle"
               style={{fontSize: 25, fontWeight: '600'}}
-              x={width*0.5}
-              y={height*0.3}
+              x={width * 0.5}
+              y={height * 0.25}
               text={`Expenses\n${totalExpense}`}
             />
           </View>
@@ -210,28 +167,40 @@ const ExpenseTrackingScreen = props => {
     );
   };
 
-  const flatListExp = () => {
+  const expensesCards = () => {
     return (
-      <View style={{marginBottom: '15%'}}>
-        <View
-          style={{
-            // marginTop: '5%',
-            marginHorizontal: '5%',
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              marginBottom: '3%',
-            }}>
-            <Text style={{fontSize: 17, fontWeight: '700'}}>Amount (₹)</Text>
-            <Text style={{fontSize: 17, fontWeight: '700', marginLeft: '5%'}}>
-              Percentage
-            </Text>
-          </View>
-          <FlatList data={categoryExpenses} renderItem={renderItem} />
-        </View>
-      </View>
+      <Card
+        elevation={0}
+        mode={'elevated'}
+        style={{backgroundColor: colors.backgroundColor, paddingBottom: '2%'}}>
+        <Card.Content>
+          {categoryExpenses.map((item, idx) => (
+            <View
+              key={idx}
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}>
+              <Title style={{fontWeight: 'bold', fontSize: 20, width: width*0.30}}>
+                {Object.keys(item)[0]}
+              </Title>
+                <Title style={{fontWeight: 'bold', fontSize: 20, width: width*0.35, textAlign: 'right'}}>
+                  {Object.values(item)[0]}
+                </Title>
+                <Title style={{fontWeight: 'bold', fontSize: 20, textAlign: 'justify', width: width*0.25, textAlign: 'right'}}>
+                  {/* {' '} */}
+                  {((Object.values(item) / totalExpense) * 100).toPrecision(
+                    2,
+                  ) == 100
+                    ? 100
+                    : ((Object.values(item) / totalExpense) * 100).toPrecision(
+                        2,
+                      )}
+                </Title>
+            </View>
+          ))}
+        </Card.Content>
+      </Card>
     );
   };
 
@@ -261,12 +230,30 @@ const ExpenseTrackingScreen = props => {
                 gutter={40}
                 x={20}
                 itemsPerRow={2}
-                groupComponent={2}
+                // groupComponent={2}
                 // orientation={'horizontal'}
                 data={pieChartLegend}
               />
-            </View> 
-            {flatListExp()}
+            </View>
+
+            <View style={{paddingHorizontal: '2%'}}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end',
+                  marginBottom: '1%',
+                }}>
+                <Text style={{fontSize: 17, fontWeight: '700'}}>
+                  Amount (₹)
+                </Text>
+                <Text
+                  style={{fontSize: 17, fontWeight: '700', marginLeft: '5%'}}>
+                  Percentage
+                </Text>
+              </View>
+
+              {expensesCards()}
+            </View>
           </>
         ) : (
           <>
@@ -295,7 +282,7 @@ const ExpenseTrackingScreen = props => {
             position: 'absolute',
             bottom: 0,
           }}>
-          <GoogleAd />
+          {/* <GoogleAd /> */}
         </View>
       </ScrollView>
     </SafeAreaView>

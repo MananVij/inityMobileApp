@@ -7,9 +7,15 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 
 import BackgroundService from 'react-native-background-actions';
 
-const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
+const sleep = time =>
+  new Promise(resolve =>
+    setTimeout(() => {
+      resolve();
+      return 1;
+    }, time),
+  );
 
-const   options = {
+const options = {
   taskName: 'Inity',
   taskTitle: 'Inity',
   taskDesc: 'Recording Your Transactions',
@@ -23,34 +29,28 @@ const   options = {
   },
 };
 
-const getAmount = (smsBody) => {
-  if(smsBody.includes('Rs.')) {
-    const arr = smsBody.split('Rs.')[1]?.split(' ')
-    return arr[0] == '' ?  arr[1] : arr[0]
-  }
-  else if(smsBody.includes('Rs')) {
-    const arr = smsBody.split('Rs')[1]?.split(' ')
+const getAmount = smsBody => {
+  if (smsBody.includes('Rs.')) {
+    const arr = smsBody.split('Rs.')[1]?.split(' ');
+    return arr[0] == '' ? arr[1] : arr[0];
+  } else if (smsBody.includes('Rs')) {
+    const arr = smsBody.split('Rs')[1]?.split(' ');
 
-    return arr[0] == '' ?  arr[1] : arr[0]
+    return arr[0] == '' ? arr[1] : arr[0];
+  } else if (smsBody.includes('INR')) {
+    const arr = smsBody.split('INR')[1]?.split(' ');
+    return arr[0] == '' ? arr[1] : arr[0];
   }
-  else if(smsBody.includes('INR'))
-  {
-    const arr = smsBody.split('INR')[1]?.split(' ')
-    return arr[0] == '' ? arr[1] : arr[0]
-  }
-}
+};
 
 const Sms = props => {
-  const [date, setDate] = useState('');
-  const [amount, setAmount] = useState('');
   const [sms, setSms] = useState();
 
   const checkMsg = () => {
     const filter = {
       box: 'inbox',
-      // address: new RegExp('w*BK\b'),
       read: 0,
-      body: 'debited'
+      body: 'debited',
     };
     SmsAndroid.list(
       JSON.stringify(filter),
@@ -65,18 +65,9 @@ const Sms = props => {
             JSON.parse(smsList)[0]?.body.includes('credited')) &&
           JSON.parse(smsList)[0]?._id != (await retrieveUserSession())
         ) {
-          
-          let amount = getAmount(JSON.parse(smsList)[0].body)
-
-          let date = moment(
-            new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
-          ).format('DD-MM-YYYY');
-          setSms({...sms, notified: true});
 
           storeTransaction(JSON.parse(smsList)[0]);
           props.pushNotif();
-          setAmount(amount);
-          setDate(date);
         }
       },
     );
@@ -122,7 +113,6 @@ const Sms = props => {
 
   try {
     let subscription = SmsListener.addListener(message => {
-      console.log(message);
       subscription.remove();
     });
   } catch (error) {
@@ -131,15 +121,12 @@ const Sms = props => {
 
   useEffect(() => {
     BackgroundService.start(veryIntensiveTask, options);
-    // BackgroundService.updateNotification({
-    //   taskDesc: 'New ExampleTask description',
-    // }); // Only Android, iOS will ignore this call
   }, []);
-
   return (
     <AddExpenseAuto
       userData={props.userData}
       date={props.date}
+      msg={props.msg}
       newSms={props.newSms}
       amount={props.amount}></AddExpenseAuto>
   );

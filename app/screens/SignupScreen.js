@@ -281,10 +281,11 @@ function LoginScreen({navigation}) {
 }
 const styles = StyleSheet.create({
   heading: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: 'bold',
-    textAlign: 'left',
+    // textAlign: 'left',
     marginBottom: '5%',
+    color: colors.secondaryHeading
   },
   button: {
     borderRadius: 12,

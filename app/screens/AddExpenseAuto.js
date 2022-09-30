@@ -63,15 +63,16 @@ export default function AddExpense(props) {
       'hardwareBackPress',
       backAction,
     );
-
     return () => backHandler.remove();
   }, []);
+
   useEffect(() => {
     let date = moment(
       new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
     ).format('DD-MM-YYYY');
     setDateSelected(date);
   }, []);
+
   const UploadDocs = async () => {
     if (!amount) {
       Alert.alert('Please enter amount of expense.');
@@ -105,6 +106,7 @@ export default function AddExpense(props) {
   const categoryButton = (categoryName, categoryEmoji, index) => {
     return (
       <Button
+        key={index}
         mode={category == categoryName ? 'contained' : 'contained-tonal'}
         style={styles.categoryButton}
         onPress={() => {

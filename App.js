@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, PermissionsAndroid, ToastAndroid, Text} from 'react-native';
+import {StyleSheet, PermissionsAndroid, ToastAndroid, Text, View} from 'react-native';
 
 import SmsAndroid from 'react-native-get-sms-android';
 import NetInfo from '@react-native-community/netinfo';
@@ -33,6 +33,7 @@ import SplashScreen from './app/screens/SplashScreen';
 
 //Local Storage
 import {retrieveData} from './app/functions/localStorage';
+import NotifService from './app/screens/NotifService';
 
 const requestSMSPermission = async () => {
   try {
@@ -57,7 +58,6 @@ const requestSMSPermission = async () => {
     console.warn(err);
   }
 };
-// const requestBgLocation = async () => {
 //   try {
 //     const granted = await PermissionsAndroid.request(
 //       // PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -122,8 +122,6 @@ export default function App() {
 
   useEffect(() => {
     requestSMSPermission();
-    // requestBgLocation();
-    // requestLocationPermission();
   }, []);
   useEffect(() => {
     NetInfo.addEventListener(state => {
@@ -181,7 +179,7 @@ export default function App() {
   const checkMsg = () => {
     const filter = {
       box: 'inbox',
-      read: 1,
+      read: 0,
     };
     SmsAndroid.list(
       JSON.stringify(filter),
@@ -205,19 +203,6 @@ export default function App() {
     );
   };
 
-  // const reverseGeocode = async (lat, long) => {
-  //   try {
-  //     const response = await fetch(
-  //       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}&zoom=18&addressdetails=1`,
-  //     );
-  //     const json = await response.json();
-  //     // console.log('reverse geocode: ', json);
-  //     return json.movies;
-  //   } catch (error) {
-  //     console.error('error in reverse geocode:', error);
-  //   }
-  // };
-
   const sleep = time =>
     new Promise(resolve => setTimeout(() => resolve(), time));
 
@@ -226,16 +211,6 @@ export default function App() {
     await new Promise(async resolve => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
         checkMsg();
-        // Geolocation.getCurrentPosition(
-        //   info => {
-        //     // console.log(info.coords.latitude, info.coords.latitude)
-        //     // reverseGeocode(info.coords.latitude, info.coords.longitude)
-        //   },
-        //   e => {
-        //     console.log(e.code, e.message);
-        //   },
-        //   {enableHighAccuracy: true},
-        // );
         await sleep(delay);
       }
     });
@@ -323,6 +298,7 @@ export default function App() {
                           userData={userData[0]}
                           amount={amount}
                           date={date}
+                          msg={sms}
                           setSms={setSms}
                         />
                       )}
@@ -403,7 +379,7 @@ const Stack = createNativeStackNavigator();
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
