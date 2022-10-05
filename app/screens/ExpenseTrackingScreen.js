@@ -1,4 +1,5 @@
 import React, {useRef, useState, useEffect} from 'react';
+import Swiper from 'react-native-swiper';
 import {
   View,
   StyleSheet,
@@ -50,40 +51,106 @@ const ExpenseTrackingScreen = props => {
   const [pieChartLegend, setPieChartLegend] = useState([]);
 
   useEffect(() => {
-    let arr = [];
-    let arr2 = [];
-    let ans = [];
+    let monthCategorizedData = [];
+    let categoryExpenses1 = [];
+    let categoryExpenses2 = [];
 
-    monthlyDataExpanded.map(el => {
+    let d1 = new Date().getMonth() + 1;
+    let d2 = new Date().getMonth();
+
+    monthCategorizedData = Object.values(
+      route?.params.userData[0].expenses,
+    ).filter(el => {
+      return el[0].date.split('-')[1] == d1;
+    });
+    monthCategorizedData = [monthCategorizedData];
+    monthCategorizedData.push(
+      Object.values(route?.params.userData[0].expenses).filter(el => {
+        return el[0].date.split('-')[1] == d2;
+      }),
+    );
+
+    let categoryArr1 = [];
+    let categoryArr2 = [];
+    let categoryDataArr = [];
+
+    monthCategorizedData[0].map(el => {
       el.map(ele => {
-        if (!arr?.includes(ele?.category)) arr.push(ele.category);
-        arr2.push({[ele.category]: ele.amount});
+        if (!categoryArr1.includes(ele?.category))
+          categoryArr1.push(ele.category);
+        categoryDataArr.push({[ele.category]: ele.amount});
       });
     });
-    arr.map(el => {
+
+    let finalAns = [categoryDataArr];
+    categoryDataArr = [];
+    monthCategorizedData[1].map(el => {
+      el.map(ele => {
+        if (!categoryArr2.includes(ele?.category))
+          categoryArr2.push(ele.category);
+        categoryDataArr.push({[ele.category]: ele.amount});
+      });
+    }),
+      finalAns.push(categoryDataArr);
+
+    categoryArr1.map(el => {
       let sum = 0;
-      arr2.map(ele => {
-        if (el == Object.keys(ele)) {
-          sum = sum + Number(Object.values(ele));
+      finalAns[0].map(ele => {
+        if (Object.keys(ele)[0] == el) {
+          sum = sum + Number(Object.values(ele)[0]);
         }
       });
-      ans.push({[el]: sum});
+      categoryExpenses1.push({[el]: sum});
     });
-    setCategoryExpense(ans);
 
-    let pie = [];
-    let legend = [];
-    ans.map(el => {
-      pie.push({x: Object.keys(el), y: Number(Object.values(el))});
-      legend.push({name: Object.keys(el)[0]});
+    let finalCategoryExpenses = [categoryExpenses1];
+
+    categoryArr2.map(el => {
+      let sum = 0;
+      finalAns[1].map(ele => {
+        if (Object.keys(ele)[0] == el) {
+          sum = sum + Number(Object.values(ele)[0]);
+        }
+      });
+      categoryExpenses2.push({[el]: sum});
     });
-    setPieChartLegend(legend);
-    setPieChartData(pie);
+
+    finalCategoryExpenses.push(categoryExpenses2);
+    setCategoryExpense(finalCategoryExpenses);
+
+    let pieChartData1 = [];
+    let legendData1 = [];
+    let pieChartData2 = [];
+    let legendData2 = [];
+
+    finalCategoryExpenses[0].map(el => {
+      pieChartData1.push({
+        x: Object.keys(el)[0],
+        y: Number(Object.values(el)[0]),
+      });
+      legendData1.push({name: Object.keys(el)[0]});
+    });
+
+    finalCategoryExpenses[1].map(el => {
+      pieChartData2.push({
+        x: Object.keys(el)[0],
+        y: Number(Object.values(el)[0]),
+      });
+      legendData2.push({name: Object.keys(el)[0]});
+    });
+
+    let pieChartData = [pieChartData1, pieChartData2];
+    let pieChartLegend = [legendData1, legendData2];
+
+    setPieChartLegend(pieChartLegend);
+    setPieChartData(pieChartData);
   }, []);
   useEffect(() => {
-    setTotalExpense(
+    let totalExpense = [
       route?.params.userData[0].monthlyExpense[monthNames[d.getMonth()]],
-    );
+      route?.params.userData[0].monthlyExpense[monthNames[d.getMonth() - 1]],
+    ];
+    setTotalExpense(totalExpense);
   }, []);
 
   let categoryListHeightAnimationValue = useRef(
@@ -97,23 +164,6 @@ const ExpenseTrackingScreen = props => {
     return el[0].date.split('-')[1] - 1 == date;
   });
 
-  const [userExpenses, setUserExpenses] = useState([]);
-  const getExpenses = async () => {
-    try {
-      const expensesCollection = collection(db, 'expenses');
-      const exp = await getDocs(expensesCollection);
-      const allExpenses = exp.docs.map(doc => doc.data());
-      allExpenses.map(expenses => {
-        if (expenses.userId == userId) {
-          userExpenses.push(expenses);
-        }
-      });
-    } catch (error) {
-      console.log('error: ', error);
-    }
-  };
-  getExpenses();
-
   const topBar = () => {
     return (
       <View style={styles.topContainer}>
@@ -124,7 +174,7 @@ const ExpenseTrackingScreen = props => {
     );
   };
 
-  const pieChart = () => {
+  const pieChart = idx => {
     return (
       <View
         style={{
@@ -140,14 +190,14 @@ const ExpenseTrackingScreen = props => {
             padAngle={1}
             startAngle={90}
             endAngle={450}
-            data={pieChartData}
+            data={pieChartData[idx]}
             colorScale={'qualitative'}
             labelRadius={95}
             innerRadius={0.2 * width}
             radius={0.43 * width}
             style={{
               labels: {
-                fontSize: 13,
+                fontSize: 0,
                 fill: 'white',
                 fontWeight: '700',
               },
@@ -158,8 +208,8 @@ const ExpenseTrackingScreen = props => {
               textAnchor="middle"
               style={{fontSize: 25, fontWeight: '600'}}
               x={width * 0.5}
-              y={height * 0.25}
-              text={`Expenses\n${totalExpense}`}
+              y={height * 0.29}
+              text={`Expenses\n${totalExpense[idx]}`}
             />
           </View>
         </Svg>
@@ -167,36 +217,51 @@ const ExpenseTrackingScreen = props => {
     );
   };
 
-  const expensesCards = () => {
+  const expensesCards = monthIdx => {
     return (
       <Card
         elevation={0}
         mode={'elevated'}
         style={{backgroundColor: colors.backgroundColor, paddingBottom: '2%'}}>
         <Card.Content>
-          {categoryExpenses.map((item, idx) => (
+          {categoryExpenses[monthIdx].map((item, idx) => (
             <View
               key={idx}
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
               }}>
-              <Title style={{fontWeight: 'bold', fontSize: 20, width: width*0.30}}>
+              <Title
+                style={{fontWeight: 'bold', fontSize: 20, width: width * 0.3}}>
                 {Object.keys(item)[0]}
               </Title>
-                <Title style={{fontWeight: 'bold', fontSize: 20, width: width*0.35, textAlign: 'right'}}>
-                  {Object.values(item)[0]}
-                </Title>
-                <Title style={{fontWeight: 'bold', fontSize: 20, textAlign: 'justify', width: width*0.25, textAlign: 'right'}}>
-                  {/* {' '} */}
-                  {((Object.values(item) / totalExpense) * 100).toPrecision(
-                    2,
-                  ) == 100
-                    ? 100
-                    : ((Object.values(item) / totalExpense) * 100).toPrecision(
-                        2,
-                      )}
-                </Title>
+              <Title
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                  width: width * 0.35,
+                  textAlign: 'right',
+                }}>
+                {Object.values(item)[0]}
+              </Title>
+              <Title
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                  textAlign: 'justify',
+                  width: width * 0.25,
+                  textAlign: 'right',
+                }}>
+                {/* {' '} */}
+                {((Object.values(item) / totalExpense[monthIdx]) * 100).toFixed(
+                  2,
+                ) == 100
+                  ? 100
+                  : (
+                      (Object.values(item) / totalExpense[monthIdx]) *
+                      100
+                    ).toFixed(2)}
+              </Title>
             </View>
           ))}
         </Card.Content>
@@ -214,75 +279,163 @@ const ExpenseTrackingScreen = props => {
       }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{flexGrow: 1}}>
+        contentContainerStyle={{flexGrow: 1}}
+      >
         {topBar()}
-        {pieChartData[0] ? (
-          <>
-            {pieChart()}
-            <Text style={styles.monthName}>
-              {monthNames[d.getMonth()].charAt(0).toUpperCase() +
-                monthNames[d.getMonth()].slice(1)}
-            </Text>
-            <View>
-              <VictoryLegend
-                colorScale={'qualitative'}
-                height={80}
-                gutter={40}
-                x={20}
-                itemsPerRow={2}
-                // groupComponent={2}
-                // orientation={'horizontal'}
-                data={pieChartLegend}
-              />
-            </View>
-
-            <View style={{paddingHorizontal: '2%'}}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-end',
-                  marginBottom: '1%',
-                }}>
-                <Text style={{fontSize: 17, fontWeight: '700'}}>
-                  Amount (₹)
+        <View style={{marginBottom: '5%'}}>
+        <Swiper
+        paginationStyle={{bottom: -15}}
+        showsButtons={false} loop={false}>
+          <View>
+            {pieChartData[0] ? (
+              <>
+                {pieChart(0)}
+                <Text style={styles.monthName}>
+                  {monthNames[d.getMonth()].charAt(0).toUpperCase() +
+                    monthNames[d.getMonth()].slice(1)}
                 </Text>
+                <View>
+                  <VictoryLegend
+                    colorScale={'qualitative'}
+                    height={80}
+                    gutter={40}
+                    x={20}
+                    itemsPerRow={2}
+                    // groupComponent={2}
+                    // orientation={'horizontal'}
+                    data={pieChartLegend[0]}
+                  />
+                </View>
+
+                <View style={{paddingHorizontal: '2%'}}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'flex-end',
+                      marginBottom: '1%',
+                    }}>
+                    <Text style={{fontSize: 17, fontWeight: '700'}}>
+                      Amount (₹)
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: '700',
+                        marginLeft: '5%',
+                      }}>
+                      Percentage
+                    </Text>
+                  </View>
+
+                  {expensesCards(0)}
+                </View>
+              </>
+            ) : (
+              <>
+                <Image
+                  source={require('../../assets/icons/no-expense.png')}
+                  style={{
+                    width: '100%',
+                    height: 300,
+                    resizeMode: 'contain',
+                  }}></Image>
                 <Text
-                  style={{fontSize: 17, fontWeight: '700', marginLeft: '5%'}}>
-                  Percentage
+                  style={{
+                    position: 'absolute',
+                    bottom: '10%',
+                    fontSize: 23,
+                    fontWeight: '700',
+                    alignSelf: 'center',
+                    color: colors.logoColor,
+                  }}>
+                  wohooo! no expense.
                 </Text>
-              </View>
-
-              {expensesCards()}
-            </View>
-          </>
-        ) : (
-          <>
-            <Image
-              source={require('../../assets/icons/no-expense.png')}
-              style={{
-                width: '100%',
-                height: 300,
-                resizeMode: 'contain',
-              }}></Image>
-            <Text
+              </>
+            )}
+            <View
               style={{
                 position: 'absolute',
-                bottom: '10%',
-                fontSize: 23,
-                fontWeight: '700',
-                alignSelf: 'center',
-                color: colors.logoColor,
+                bottom: 0,
               }}>
-              wohooo! no expense.
-            </Text>
-          </>
-        )}
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-          }}>
-          {/* <GoogleAd /> */}
+              {/* <GoogleAd /> */}
+            </View>
+          </View>
+          <View style={styles.slide2}>
+            {pieChartData[0] ? (
+              <>
+                {pieChart(1)}
+                <Text style={styles.monthName}>
+                  {monthNames[d.getMonth() - 1].charAt(0).toUpperCase() +
+                    monthNames[d.getMonth() - 1].slice(1)}
+                </Text>
+                <View>
+                  <VictoryLegend
+                    colorScale={'qualitative'}
+                    height={80}
+                    gutter={40}
+                    x={20}
+                    itemsPerRow={2}
+                    // groupComponent={2}
+                    // orientation={'horizontal'}
+                    data={pieChartLegend[1]}
+                  />
+                </View>
+
+                <View style={{paddingHorizontal: '2%'}}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'flex-end',
+                      marginBottom: '1%',
+                    }}>
+                    <Text style={{fontSize: 17, fontWeight: '700'}}>
+                      Amount (₹)
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: '700',
+                        marginLeft: '5%',
+                      }}>
+                      Percentage
+                    </Text>
+                  </View>
+
+                  {expensesCards(1)}
+                </View>
+              </>
+            ) : (
+              <>
+                <Image
+                  source={require('../../assets/icons/no-expense.png')}
+                  style={{
+                    width: '100%',
+                    height: 300,
+                    resizeMode: 'contain',
+                  }}></Image>
+                <Text
+                  style={{
+                    position: 'absolute',
+                    bottom: '10%',
+                    fontSize: 23,
+                    fontWeight: '700',
+                    alignSelf: 'center',
+                    color: colors.logoColor,
+                  }}>
+                  wohooo! no expense.
+                </Text>
+              </>
+            )}
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+              }}>
+              {/* <GoogleAd /> */}
+            </View>
+          </View>
+        </Swiper>
+
         </View>
       </ScrollView>
     </SafeAreaView>

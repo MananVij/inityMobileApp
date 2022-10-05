@@ -62,7 +62,7 @@ const expenseComponent = (amount, title, type, categories) => {
           </Text>
         </View>
         <Text style={{fontWeight: '500', fontSize: 19, marginRight: '5%'}}>
-          ₹ {amount}
+          ₹ {Number(amount).toFixed(2)}
         </Text>
       </View>
     </View>
@@ -174,7 +174,6 @@ export default function HomeScreen({navigation}, props) {
   }, [userData]);
 
   const auth = getAuth();
-  const user = auth.currentUser;
 
   const [firstName, setFirstName] = useState('');
   onAuthStateChanged(authentication, user => {

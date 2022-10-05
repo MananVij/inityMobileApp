@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, PermissionsAndroid, ToastAndroid, Text, View} from 'react-native';
+import {StyleSheet, PermissionsAndroid, ToastAndroid, Text, View, } from 'react-native';
 
 import SmsAndroid from 'react-native-get-sms-android';
 import NetInfo from '@react-native-community/netinfo';
@@ -105,6 +105,7 @@ const requestSMSPermission = async () => {
 //     console.warn(err);
 //   }
 // };
+
 
 export default function App() {
   const pushNotification = data => {

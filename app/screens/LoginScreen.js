@@ -5,6 +5,7 @@ import {
   ToastAndroid,
   Image,
   ScrollView,
+  View,
 } from 'react-native';
 import {signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import {
@@ -143,9 +144,9 @@ function LoginScreen({navigation}) {
 
           <TextInput
             theme={{
-              colors: {primary: colors.logoColor},
+              colors: {primary: colors.logoColor, placeholder: 'white'},
             }}
-            style={{marginVertical: '0.5%'}}
+            style={{marginVertical: '0.5%', backgroundColor: 'white'}}
             mode="outlined"
             label={'Email'}
             value={email}
@@ -154,7 +155,7 @@ function LoginScreen({navigation}) {
             theme={{
               colors: {primary: colors.logoColor},
             }}
-            style={{marginVertical: '0.5%'}}
+            style={{marginVertical: '0.5%', backgroundColor: 'white'}}
             mode="outlined"
             label={'Password'}
             value={password}
@@ -169,7 +170,7 @@ function LoginScreen({navigation}) {
           <Button
             mode="contained"
             style={styles.button}
-            labelStyle={{fontSize: 19, fontWeight: '700'}}
+            labelStyle={{fontSize: 19, fontWeight: '700', color: 'white'}}
             loading={loader}
             onPress={async () => {
               setLoader(true);
@@ -178,11 +179,31 @@ function LoginScreen({navigation}) {
             }}>
             Log In
           </Button>
-          <GoogleSigninButton
-            style={{width: '100%', height: 52}}
+          <TouchableOpacity
+            style={styles.googleButton}
+            activeOpacity={0.6}
             onPress={async () => {
               await googleSignIn();
-            }}></GoogleSigninButton>
+            }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '1.2%',
+              }}>
+              <Image
+                source={require('../../assets/icons/glogo.png')}
+                style={{height: 30, width: 30, marginRight: '5%'}}></Image>
+              <Text style={{fontSize: 15, fontWeight: '600', color: '#757575'}}>
+                Sign In With Google
+              </Text>
+            </View>
+          </TouchableOpacity>
+          {/* <GoogleSigninButton
+            style={{width: '100%', height: 52, }}
+            onPress={async () => {
+              await googleSignIn();
+            }}></GoogleSigninButton> */}
           <Text style={styles.signupText}>
             Don't have an account?{' '}
             <Text
@@ -206,7 +227,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: 'bold',
     marginBottom: '5%',
-    color: colors.secondaryHeading
+    color: colors.secondaryHeading,
   },
   forgotPasswordText: {
     marginTop: '2%',
@@ -219,11 +240,18 @@ const styles = StyleSheet.create({
     marginVertical: '2%',
     backgroundColor: '#1e5bfa',
   },
+  googleButton: {
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: '2%',
+    backgroundColor: 'white',
+  },
   signupText: {
     textAlign: 'center',
     marginTop: '7%',
     fontSize: 15,
     fontWeight: '500',
+    color: 'black'
   },
 });
 

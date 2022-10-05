@@ -15,6 +15,7 @@ import colors from '../config/colors';
 import moment from 'moment';
 import {addExpense, addCategory} from '../../API/firebaseMethods';
 import RBSheet from 'react-native-raw-bottom-sheet';
+import { useNavigation } from '@react-navigation/native';
 
 import {useRoute} from '@react-navigation/native';
 import {
@@ -31,11 +32,14 @@ export default function AddExpense() {
   const showToast = msg => {
     ToastAndroid.show(msg, ToastAndroid.SHORT);
   };
+  const navigation = useNavigation()
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const refRBSheet = useRef();
 
-  const [dateSelected, setDateSelected] = useState('');
+  const [dateSelected, setDateSelected] = useState(
+    moment(new Date()).format('DD-MM-YYYY'),
+  );
   const [amount, setAmount] = useState();
   const [note, setNote] = useState();
   const [category, setCategory] = useState('');
@@ -81,6 +85,7 @@ export default function AddExpense() {
       try {
         addExpense(route?.params.userData, expenseData);
         showToast('Expense Added');
+        navigation.navigate('HomeScreen')
       } catch (e) {
         console.log('error in uploading document: ', e);
         showToast('Some Error Occured. Please try again!');
@@ -229,6 +234,7 @@ export default function AddExpense() {
                 keyboardType="numeric"
                 outlineColor="transparent"
                 activeOutlineColor="transparent"
+                ty
                 style={{
                   flexWrap: 'wrap',
                   backgroundColor: 'transparent',
@@ -241,10 +247,11 @@ export default function AddExpense() {
                   justifyContent: 'center',
                 }}
                 value={amount}
-                onChangeText={amount => setAmount(amount)}
+                onChangeText={amount => {
+                  setAmount(Number(amount));
+                }}
               />
             </View>
-
             <View
               style={{
                 flexWrap: 'wrap',
@@ -279,7 +286,11 @@ export default function AddExpense() {
                 label="Memo"
                 theme={{colors: {primary: colors.logoColor}}}
                 autoCapitalize="sentences"
-                style={{width: '48%', marginRight: '2%'}}
+                style={{
+                  width: '48%',
+                  marginRight: '2%',
+                  backgroundColor: 'white',
+                }}
                 value={note}
                 onChangeText={note => setNote(note)}
               />
@@ -290,7 +301,13 @@ export default function AddExpense() {
                 placeholder={'Date'}
                 editable={false}
                 value={dateSelected}
-                style={{width: '48%', marginRight: '2%'}}
+                outlineColor={'black'}
+                style={{
+                  width: '48%',
+                  marginRight: '2%',
+                  backgroundColor: 'white',
+                }}
+                defaultValue={'1233'}
                 right={
                   <TextInput.Icon
                     icon="calendar"
@@ -303,6 +320,7 @@ export default function AddExpense() {
               <DateTimePickerModal
                 isVisible={isDatePickerVisible}
                 mode="date"
+                maximumDate={new Date()}
                 onConfirm={handleConfirm}
                 onCancel={cancelDatePicker}
               />

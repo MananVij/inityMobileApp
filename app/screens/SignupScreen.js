@@ -1,6 +1,13 @@
 import React, {useState} from 'react';
 
-import {StyleSheet, Image, ToastAndroid, ScrollView} from 'react-native';
+import {
+  StyleSheet,
+  Image,
+  ToastAndroid,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import colors from '../config/colors';
 import {
   Button,
@@ -30,7 +37,6 @@ function LoginScreen({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loader, setLoader] = useState(false);
-  const [googleLoader, setGoogleLoader] = useState(false);
   const [dialogMsg, setDialogMsg] = useState('');
 
   GoogleSignin.configure({
@@ -204,16 +210,16 @@ function LoginScreen({navigation}) {
               alignSelf: 'center',
               width: 90,
               height: 90,
-              marginTop: '45%',
+              marginTop: '38%',
               marginBottom: '15%',
             }}></Image>
           <Text style={styles.heading}>Sign up</Text>
 
           <TextInput
             theme={{
-              colors: {primary: colors.logoColor},
+              colors: {primary: colors.logoColor, },
             }}
-            style={{marginVertical: '0.5%'}}
+            style={{marginVertical: '0.5%', backgroundColor: 'white', borderColor: 'black'}}
             mode="outlined"
             label={'Name'}
             placeholderTextColor={'black'}
@@ -223,7 +229,7 @@ function LoginScreen({navigation}) {
             theme={{
               colors: {primary: colors.logoColor},
             }}
-            style={{marginVertical: '0.5%'}}
+            style={{marginVertical: '0.5%', backgroundColor: 'white', borderColor: 'black'}}
             mode="outlined"
             label={'Email'}
             value={email}
@@ -232,7 +238,7 @@ function LoginScreen({navigation}) {
             theme={{
               colors: {primary: colors.logoColor},
             }}
-            style={{marginVertical: '0.5%', marginBottom: '8%'}}
+            style={{marginVertical: '0.5%', marginBottom: '8%', backgroundColor: 'white', borderColor: 'black'}}
             mode="outlined"
             label={'Password'}
             secureTextEntry={true}
@@ -250,9 +256,11 @@ function LoginScreen({navigation}) {
             }}>
             Sign Up
           </Button>
-          <Button
-            style={styles.button}
-            labelStyle={styles.buttonText}
+          {/* <Button
+            mode="elevated"
+            style={styles.googleButton}
+            // labelStyle={styles.buttonText}
+            labelStyle={{fontSize: 15, fontWeight: '600', color: '#757575'}}
             loading={googleLoader}
             onPress={async () => {
               setGoogleLoader(true);
@@ -260,7 +268,28 @@ function LoginScreen({navigation}) {
               setGoogleLoader(false);
             }}>
             Sign Up With Google
-          </Button>
+          </Button> */}
+          <TouchableOpacity
+            style={styles.googleButton}
+            activeOpacity={0.6}
+            onPress={async () => {
+              // setGoogleLoader(true);
+              await googleSignup();
+            }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '1.2%',
+              }}>
+              <Image
+                source={require('../../assets/icons/glogo.png')}
+                style={{height: 30, width: 30, marginRight: '5%'}}></Image>
+              <Text style={{fontSize: 14, fontWeight: '600', color: '#757575'}}>
+                Sign Up With Google
+              </Text>
+            </View>
+          </TouchableOpacity>
           <Text style={styles.signupText}>
             Already have an account?{' '}
             <Text
@@ -285,7 +314,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     // textAlign: 'left',
     marginBottom: '5%',
-    color: colors.secondaryHeading
+    color: colors.secondaryHeading,
+  },
+  googleButton: {
+    marginTop: '3%',
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: '2%',
+    backgroundColor: 'white',
   },
   button: {
     borderRadius: 12,
@@ -298,9 +334,10 @@ const styles = StyleSheet.create({
   },
   signupText: {
     textAlign: 'center',
-    marginTop: '7%',
-    fontSize: 17,
+    marginTop: '2%',
+    fontSize: 15,
     fontWeight: '500',
+    color: 'black'
   },
 });
 

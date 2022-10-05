@@ -3,17 +3,22 @@ import React, {useEffect, useState} from 'react';
 import {useRoute} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import colors from '../config/colors';
+import Swiper from 'react-native-swiper';
 import GoogleAd from '../components/GoogleAd';
+import {CONSTANTS} from '@firebase/util';
 
 export default function WeekSeg() {
   const [expenses, setExpenses] = useState([]);
   const route = useRoute();
+
   useEffect(() => {
-    var d = new Date().getMonth() + 1;
+    var d1 = new Date().getMonth() + 1;
+    var d2 = new Date().getMonth();
     let arr = [];
     let dates = [];
+    let newArr = [];
     Object.keys(route?.params.expenses).filter(el => {
-      if (el.split('-')[1] == d) {
+      if (el.split('-')[1] == d2) {
         dates.push(el);
       }
     });
@@ -21,7 +26,21 @@ export default function WeekSeg() {
     dates.map(el => {
       arr.push({[el]: route?.params.expenses[el]});
     });
-    setExpenses(arr);
+    dates = [];
+
+    Object.keys(route?.params.expenses).filter(el => {
+      if (el.split('-')[1] == d1) {
+        dates.push(el);
+      }
+    });
+    dates.sort().reverse();
+    dates.map(el => {
+      newArr.push({[el]: route?.params.expenses[el]});
+    });
+    var final = [];
+    final.push(newArr);
+    final.push(arr);
+    setExpenses(final);
   }, []);
 
   const expenseComponent = (amount, title, type, categories) => {
@@ -59,7 +78,7 @@ export default function WeekSeg() {
             </Text>
           </View>
           <Text style={{fontWeight: '500', fontSize: 19, marginRight: '5%'}}>
-            ₹ {amount}
+            ₹ {Number(amount).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -71,78 +90,150 @@ export default function WeekSeg() {
       style={{
         flex: 1,
         paddingTop: '25%',
-        // marginBottom: '5%',
       }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{flexGrow: 1}}
-        style={{flex: 1}}>
-        <View style={{marginHorizontal: '5%', flex: 1}}>
-          <Text
-            style={{
-              marginTop: '5%',
-              marginBottom: '2%',
-              fontWeight: '700',
-              fontSize: 25,
-            }}>
-            Expenses
-          </Text>
-          {expenses.length != 0 ? (
-            expenses.map(el => {
-              return Object.keys(el).map((ele, idx) => {
-                return (
-                  <View key={idx}>
-                    <Text
-                      style={{
-                        fontWeight: '700',
-                        fontSize: 17,
-                        marginTop: '5%',
-                        marginBottom: '2%',
-                      }}>
-                      {el[ele][0].date.split('-')[0] +
-                        ' / ' +
-                        el[ele][0].date.split('-')[1]}
-                    </Text>
+      <Text
+        style={{
+          marginTop: '5%',
+          marginBottom: '2%',
+          marginHorizontal: '5%',
+          fontWeight: '700',
+          fontSize: 25,
+        }}>
+        Expenses
+      </Text>
+      <View
+        style={{
+          marginHorizontal: '5%',
+          flex: 1,
+        }}>
+        <Swiper
+          showsButtons={false}
+          loop={false}
+          paginationStyle={{bottom: 10}}
+        >
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {expenses[0]?.length != 0 ? (
+              expenses[0]?.map(el => {
+                return Object.keys(el).map((ele, idx) => {
+                  return (
+                    <View key={idx}>
+                      <Text
+                        style={{
+                          fontWeight: '700',
+                          fontSize: 17,
+                          marginTop: '5%',
+                          marginBottom: '2%',
+                        }}>
+                        {el[ele][0].date.split('-')[0] +
+                          ' / ' +
+                          el[ele][0].date.split('-')[1]}
+                      </Text>
 
-                    {el[ele].map((exp, index) => {
-                      return (
-                        <View key={index}>
-                          {expenseComponent(
-                            exp.amount,
-                            exp.category,
-                            exp.type,
-                            route?.params.categories,
-                          )}
-                        </View>
-                      );
-                    })}
-                  </View>
-                );
-              });
-            })
-          ) : (
-            <>
-              <Image
-                source={require('../../assets/icons/no-expense.png')}
-                style={{width: '100%', height: 300, resizeMode: 'stretch', flexDirection: 'row', justifyContent: 'center'}}></Image>
-              <Text
-                style={{
-                  position: 'absolute',
-                  bottom: '10%',
-                  fontSize: 23,
-                  fontWeight: '700',
-                  alignSelf: 'center',
-                  color: colors.logoColor,
-                }}>
-                wohooo! no expense.
-              </Text>
-            </>
-          )}
-        </View>
-        <View style={{marginTop: '2%'}}>
-          {/* <GoogleAd /> */}
-        </View>
-      </ScrollView>
+                      {el[ele].map((exp, index) => {
+                        return (
+                          <View key={index}>
+                            {expenseComponent(
+                              exp.amount,
+                              exp.category,
+                              exp.type,
+                              route?.params.categories,
+                            )}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  );
+                });
+              })
+            ) : (
+              <>
+                <Image
+                  source={require('../../assets/icons/no-expense.png')}
+                  style={{
+                    width: '100%',
+                    height: 300,
+                    resizeMode: 'stretch',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                  }}></Image>
+                <Text
+                  style={{
+                    position: 'absolute',
+                    bottom: '10%',
+                    fontSize: 23,
+                    fontWeight: '700',
+                    alignSelf: 'center',
+                    color: colors.logoColor,
+                  }}>
+                  wohooo! no expense.
+                </Text>
+              </>
+            )}
+          </ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {expenses[1]?.length != 0 ? (
+              expenses[1]?.map(el => {
+                return Object.keys(el).map((ele, idx) => {
+                  return (
+                    <ScrollView key={idx}>
+                      <Text
+                        style={{
+                          fontWeight: '700',
+                          fontSize: 17,
+                          marginTop: '5%',
+                          marginBottom: '2%',
+                        }}>
+                        {el[ele][0].date.split('-')[0] +
+                          ' / ' +
+                          el[ele][0].date.split('-')[1]}
+                      </Text>
+
+                      {el[ele].map((exp, index) => {
+                        return (
+                          <View key={index}>
+                            {expenseComponent(
+                              exp.amount,
+                              exp.category,
+                              exp.type,
+                              route?.params.categories,
+                            )}
+                          </View>
+                        );
+                      })}
+                    </ScrollView>
+                  );
+                });
+              })
+            ) : (
+              <>
+                <Image
+                  source={require('../../assets/icons/no-expense.png')}
+                  style={{
+                    width: '100%',
+                    height: 300,
+                    resizeMode: 'stretch',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                  }}></Image>
+                <Text
+                  style={{
+                    position: 'absolute',
+                    bottom: '10%',
+                    fontSize: 23,
+                    fontWeight: '700',
+                    alignSelf: 'center',
+                    color: colors.logoColor,
+                  }}>
+                  wohooo! no expense.
+                </Text>
+              </>
+            )}
+          </ScrollView>
+        </Swiper>
+      </View>
+      {/* <View style={{marginTop: '2%'}}>
+        <GoogleAd />
+      </View> */}
     </SafeAreaView>
   );
 }
