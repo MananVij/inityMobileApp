@@ -150,18 +150,20 @@ export default function App() {
   const setUserDataFxn = async () => {
     const localData = await retrieveData('userData');
     setLocalData(localData);
+    if (localData[0] == null) setLoading(false);
     if (localData[0]) {
       if (isOnline) {
         const data = await getUserData(localData[0][0].userDetails.uid);
         setUserData(data);
+        setLoading(false);
       } else if (isOnline == false) {
         const data = await retrieveData('userData');
         setUserData(data[0]);
+        setLoading(false);
         ToastAndroid.show("You're Offline!", ToastAndroid.SHORT);
       }
       setUser(localData[0][0].userDetails);
     }
-    setLoading(false);
   };
 
   onAuthStateChanged(authentication, user => {
@@ -241,7 +243,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {!loading && isOnline != undefined ? (
+        {!loading ? (
           <>
             {user && userData[0] && userData.length ? (
               <>
@@ -436,13 +438,11 @@ export default function App() {
             )}
           </>
         ) : (
-          <>
-            <Stack.Screen
-              options={{headerShown: false}}
-              name="SplashScreen"
-              component={SplashScreen}
-            />
-          </>
+          <Stack.Screen
+            options={{headerShown: false}}
+            name="SplashScreen"
+            component={SplashScreen}
+          />
         )}
       </Stack.Navigator>
     </NavigationContainer>
