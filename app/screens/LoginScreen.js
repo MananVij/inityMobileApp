@@ -20,13 +20,17 @@ import {
 import {authentication, webClientId} from '../../config/keys';
 import colors from '../config/colors';
 import {getUserData, createSignupDoc} from '../../API/firebaseMethods';
-import {storeDataLocally} from '../functions/localStorage';
 import {
-  GoogleSignin,
-  GoogleSigninButton,
-} from '@react-native-google-signin/google-signin';
+  ifAvatarExists,
+  storeAvatar,
+  storeDataLocally,
+} from '../functions/localStorage';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {firebase} from '@react-native-firebase/auth';
 import {SafeAreaView} from 'react-native-safe-area-context';
+
+import RNFetchBlob from 'rn-fetch-blob';
+const {config, fs} = RNFetchBlob;
 
 function LoginScreen({navigation}) {
   GoogleSignin.configure({
@@ -51,7 +55,15 @@ function LoginScreen({navigation}) {
           if (authentication.currentUser.emailVerified) {
             const data = await getUserData();
             storeDataLocally('userData', data);
-            navigation.replace('HomeScreen', {userData: data});
+
+            if (data[0].userDetails.gender == '') {
+              navigation.replace('SelectProfile', {userData: data});
+            } else {
+              if (!(await ifAvatarExists())) {
+                storeAvatar(data[0]?.userDetails.avatarLink);
+              }
+              navigation.replace('HomeScreen', {userData: userData});
+            }
           } else {
             signOut(authentication)
               .then(async () => {
@@ -98,7 +110,15 @@ function LoginScreen({navigation}) {
             }
             const userData = await getUserData(user.user.uid);
             storeDataLocally('userData', userData);
-            navigation.replace('HomeScreen', {userData: userData});
+
+            if (userData[0]?.userDetails.gender == '') {
+              navigation.replace('SelectProfile', {userData: userData});
+            } else {
+              if (!(await ifAvatarExists())) {
+                storeAvatar(userData[0]?.userDetails.avatarLink);
+              }
+              navigation.replace('HomeScreen', {userData: userData});
+            }
           });
       });
     } catch (error) {
@@ -234,6 +254,7 @@ const styles = StyleSheet.create({
     marginBottom: '6%',
     textAlign: 'right',
     textDecorationLine: 'underline',
+    color: colors.secondaryHeading,
   },
   button: {
     borderRadius: 12,
@@ -251,7 +272,7 @@ const styles = StyleSheet.create({
     marginTop: '7%',
     fontSize: 15,
     fontWeight: '500',
-    color: 'black'
+    color: 'black',
   },
 });
 

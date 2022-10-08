@@ -217,8 +217,9 @@ export default function HomeScreen({navigation}, props) {
             });
           }}>
           <Image
-            style={{resizeMode: 'contain', width: 50, height: 50}}
-            source={require('../../assets/avatar/business.png')}></Image>
+            style={{resizeMode: 'contain', width: 60, height: 60, borderRadius: 100}}
+            source={{uri: 'file:///storage/emulated/0/Pictures/inity_avatar.png'}}
+            ></Image>
         </TouchableOpacity>
       </View>
     );

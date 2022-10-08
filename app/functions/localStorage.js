@@ -1,4 +1,6 @@
 import EncryptedStorage from 'react-native-encrypted-storage';
+import RNFetchBlob from 'rn-fetch-blob';
+const {config, fs} = RNFetchBlob;
 
 export async function storeDataLocally(dataName, data) {
   try {
@@ -20,11 +22,42 @@ export async function retrieveData(dataName) {
 }
 
 export async function clearStorage() {
-    try {
-        await EncryptedStorage.clear();
-        const data = await retrieveData('userData')
-    } catch (error) {
-        console.log('error in clearing storage', error)
-        // There was an error on the native side
-    }
+  try {
+    await EncryptedStorage.clear();
+    const data = await retrieveData('userData');
+  } catch (error) {
+    console.log('error in clearing storage', error);
+    // There was an error on the native side
+  }
+}
+
+export async function storeAvatar(avatarLink) {
+  let PictureDir = fs.dirs.PictureDir;
+  RNFetchBlob.config({
+    fileCache: true,
+    appendExt: 'image/png',
+    addAndroidDownloads: {
+      useDownloadManager: true,
+      path: PictureDir + '/inity_avatar.png',
+      mediaScannable: true,
+    },
+  })
+    .fetch('GET', avatarLink)
+    .then(res => {
+      console.log('Avatar Downloaded Successfully.');
+    })
+    .catch(e => {
+      console.log(e, 'error');
+    });
+}
+
+export async function ifAvatarExists() {
+  return RNFetchBlob.fs
+    .exists('file:///storage/emulated/0/Pictures/inity_avatar.png')
+    .then(res => {
+      return res;
+    })
+    .catch(e => {
+      console.log('error', e);
+    });
 }

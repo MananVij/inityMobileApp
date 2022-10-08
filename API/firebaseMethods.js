@@ -5,6 +5,7 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore/lite';
+import {storeDataLocally} from '../app/functions/localStorage';
 
 import {db, userId} from '../config/keys';
 
@@ -49,12 +50,12 @@ export const createTotalExpenseDoc = async () => {
 };
 
 export const createSignupDoc = async user => {
-
   const signupData = {
     userDetails: {
       name: user.displayName,
       email: user.email,
       uid: userId ? userId : user.userId,
+      gender: '',
     },
     monthlyExpense: {
       jan: '0',
@@ -104,35 +105,37 @@ export const createSignupDoc = async user => {
     expenses: {},
   };
   try {
-    const docRef = await setDoc(doc(db, 'users', userId ? userId : user.userId), signupData);
+    const docRef = await setDoc(
+      doc(db, 'users', userId ? userId : user.userId),
+      signupData,
+    );
     // await storeDataLocally("userData", [signupData]);
     console.log('Signup Doc created');
-    return signupData
+    return signupData;
   } catch (e) {
     console.log('Error in creating signup doc: ', e);
   }
 };
 
-export const getUserData = async (googleUserId) => {
+export const getUserData = async googleUserId => {
   try {
     const userCol = collection(db, 'users');
     const userSnapshot = await getDocs(userCol);
     const expenseList = userSnapshot.docs.map(doc => doc.data());
-    if(googleUserId) {
-      const data = expenseList.filter((item, key) => { 
+    if (googleUserId) {
+      const data = expenseList.filter((item, key) => {
         if (item?.userDetails?.uid == googleUserId) {
           return item;
         }
       });
       return data;
-    }
-    else {
-      const data = expenseList.filter((item, key) => { 
+    } else {
+      const data = expenseList.filter((item, key) => {
         if (item?.userDetails?.uid == userId) {
           return item;
         }
-    });
-    return data;
+      });
+      return data;
     }
   } catch (error) {
     console.log(error, 'in fetching data');
@@ -169,14 +172,38 @@ export const addExpense = async (userData, expenseData) => {
   } else {
     userData[0].expenses[date].push(expenseData);
   }
-  // console.log(userData[0].userDetails.uid)
   userData[0].monthlyExpense[monthName] = updatedMonthlyExpense;
 
   try {
-    const docRef = await setDoc(doc(db, 'users', userData[0].userDetails.uid), userData[0]);
+    const docRef = await setDoc(
+      doc(db, 'users', userData[0].userDetails.uid),
+      userData[0],
+    );
     console.log('Expense Added');
   } catch (error) {
     console.log('Error in adding expense: ', error);
+  }
+};
+
+export const chooseGender = async (userData, gender, avatarIndex, avatarLink) => {
+  userData.userDetails = {
+    ...userData.userDetails,
+    gender: gender,
+    avatarIndex: avatarIndex,
+    avatarLink: avatarLink
+  };
+
+  try {
+    const docRef = await setDoc(
+      doc(db, 'users', userData.userDetails.uid),
+      userData,
+    );
+    storeDataLocally('userData', userData);
+    console.log('Gender Added');
+    return 1
+  } catch (error) {
+    console.log('Error in adding gender: ', error);
+    return 0
   }
 };
 

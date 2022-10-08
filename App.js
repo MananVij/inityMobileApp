@@ -1,5 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, PermissionsAndroid, ToastAndroid, Text, View, } from 'react-native';
+import {
+  StyleSheet,
+  PermissionsAndroid,
+  ToastAndroid,
+  Text,
+  View,
+} from 'react-native';
 
 import SmsAndroid from 'react-native-get-sms-android';
 import NetInfo from '@react-native-community/netinfo';
@@ -21,6 +27,7 @@ import AddExpense from './app/screens/AddExpense';
 import NewScreen from './app/screens/NewScreen';
 import ResetPasswordScreen from './app/screens/ResetPasswordScreen';
 import WeekSeg from './app/screens/WeekSeg';
+import SelectProfile from './app/screens/SelectProfile';
 import {onAuthStateChanged} from 'firebase/auth';
 
 // Background Service
@@ -58,6 +65,7 @@ const requestSMSPermission = async () => {
     console.warn(err);
   }
 };
+
 //   try {
 //     const granted = await PermissionsAndroid.request(
 //       // PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -105,7 +113,6 @@ const requestSMSPermission = async () => {
 //     console.warn(err);
 //   }
 // };
-
 
 export default function App() {
   const pushNotification = data => {
@@ -234,14 +241,18 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {/* {user && userData[0] && userData.length? ( */}
         {!loading && isOnline != undefined ? (
           <>
-            {/* {user && (userData[0] != undefined )? ( */}
-             {user && userData[0] && userData.length ? (
+            {user && userData[0] && userData.length ? (
               <>
-                {!sms[0] ? (
+                {userData[0].userDetails.gender == '' ? (
                   <>
+                    <Stack.Screen
+                      options={{headerShown: false}}
+                      initialParams={{userData: userData}}
+                      name="SelectProfile"
+                      component={SelectProfile}
+                    />
                     <Stack.Screen
                       options={{headerShown: false}}
                       initialParams={{userData: userData}}
@@ -290,20 +301,77 @@ export default function App() {
                   </>
                 ) : (
                   <>
-                    <Stack.Screen
-                      options={{headerShown: false}}
-                      name="NewScreen">
-                      {props => (
-                        <NewScreen
-                          {...props}
-                          userData={userData[0]}
-                          amount={amount}
-                          date={date}
-                          msg={sms}
-                          setSms={setSms}
+                    {!sms[0] ? (
+                      <>
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          initialParams={{userData: userData}}
+                          name="HomeScreen"
+                          component={HomeScreen}></Stack.Screen>
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="AddExpense"
+                          component={AddExpense}
                         />
-                      )}
-                    </Stack.Screen>
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="SelectProfile"
+                          component={SelectProfile}
+                        />
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="Sms"
+                          component={Sms}
+                        />
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="LogoutScreen"
+                          component={LogoutScreen}
+                        />
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="ExpenseTrackingScreen"
+                          component={ExpenseTrackingScreen}
+                        />
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="WeekSeg"
+                          component={WeekSeg}
+                        />
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="LoginScreen"
+                          component={LoginScreen}
+                        />
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="ResetPasswordScreen"
+                          component={ResetPasswordScreen}
+                        />
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="SignupScreen"
+                          component={SignupScreen}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Stack.Screen
+                          options={{headerShown: false}}
+                          name="NewScreen">
+                          {props => (
+                            <NewScreen
+                              {...props}
+                              userData={userData[0]}
+                              amount={amount}
+                              date={date}
+                              msg={sms}
+                              setSms={setSms}
+                            />
+                          )}
+                        </Stack.Screen>
+                      </>
+                    )}
                   </>
                 )}
               </>
@@ -318,6 +386,11 @@ export default function App() {
                   options={{headerShown: false}}
                   name="SignupScreen"
                   component={SignupScreen}
+                />
+                <Stack.Screen
+                  options={{headerShown: false}}
+                  name="SelectProfile"
+                  component={SelectProfile}
                 />
                 <Stack.Screen
                   options={{headerShown: false}}

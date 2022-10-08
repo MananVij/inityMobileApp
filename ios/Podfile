@@ -27,6 +27,7 @@ target 'inity' do
 
   pod 'RNGoogleSignin', :path => '../node_modules/@react-native-google-signin/google-signin'
 
+
   target 'inityTests' do
     inherit! :complete
     # Pods for testing

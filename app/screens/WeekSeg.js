@@ -158,8 +158,7 @@ export default function WeekSeg() {
                   }}></Image>
                 <Text
                   style={{
-                    position: 'absolute',
-                    bottom: '10%',
+                    marginTop: '25%',
                     fontSize: 23,
                     fontWeight: '700',
                     alignSelf: 'center',
@@ -217,8 +216,7 @@ export default function WeekSeg() {
                   }}></Image>
                 <Text
                   style={{
-                    position: 'absolute',
-                    bottom: '10%',
+                    marginTop: '25%',
                     fontSize: 23,
                     fontWeight: '700',
                     alignSelf: 'center',

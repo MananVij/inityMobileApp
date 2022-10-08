@@ -287,7 +287,7 @@ const ExpenseTrackingScreen = props => {
         paginationStyle={{bottom: -15}}
         showsButtons={false} loop={false}>
           <View>
-            {pieChartData[0] ? (
+            { pieChartData[0] &&  pieChartData[0][0] ? (
               <>
                 {pieChart(0)}
                 <Text style={styles.monthName}>
@@ -341,8 +341,7 @@ const ExpenseTrackingScreen = props => {
                   }}></Image>
                 <Text
                   style={{
-                    position: 'absolute',
-                    bottom: '10%',
+                    marginTop: '25%',
                     fontSize: 23,
                     fontWeight: '700',
                     alignSelf: 'center',
@@ -361,7 +360,7 @@ const ExpenseTrackingScreen = props => {
             </View>
           </View>
           <View style={styles.slide2}>
-            {pieChartData[0] ? (
+            { pieChartData[0] && pieChartData[0][1] != undefined ? (
               <>
                 {pieChart(1)}
                 <Text style={styles.monthName}>
@@ -415,8 +414,7 @@ const ExpenseTrackingScreen = props => {
                   }}></Image>
                 <Text
                   style={{
-                    position: 'absolute',
-                    bottom: '10%',
+                    marginTop: '25%',
                     fontSize: 23,
                     fontWeight: '700',
                     alignSelf: 'center',

@@ -133,49 +133,17 @@ function LoginScreen({navigation}) {
             }
             const userData = await getUserData(user.user.uid);
             storeDataLocally('userData', userData);
-            navigation.replace('HomeScreen', {userData: userData});
 
-            // await fetchSignInMethodsForEmail(authentication, data.user.email)
-            //   .then(async res => {
-            //     if (!res.length) {
-            //       const googleUser = {
-            //         displayName: user.user.displayName,
-            //         email: user.user.email,
-            //         userId: user.user.uid,
-            //       };
-            //       console.log('googleUser', googleUser);
-            //       await createSignupDoc(googleUser);
-            //     }
-            //     const userData = await getUserData(googleUser.userId);
-            //     navigation.replace('HomeScreen', {userData: userData});
-            //   })
-            //   .catch(e => {
-            //     console.log('error', e);
-            //   });
+            if (userData[0]?.userDetails.gender == '') {
+              navigation.replace('SelectProfile', {userData: userData});
+            } else {
+              if (!(await ifAvatarExists())) {
+                storeAvatar(userData[0]?.userDetails.avatarLink);
+              }
+              navigation.replace('HomeScreen', {userData: userData});
+            }
           });
       });
-      // .then(async user => {
-      //   // await fetchSignInMethodsForEmail(authentication, data.user.email).then(res => {
-      //   //   if(!da)
-
-      //   // }).catch(e => {
-      //   //   console.log("e", e);
-      //   // })
-      //   console.log('User Logged In');
-
-      //   // const googleUser = {
-      //   //   displayName: user.user.displayName,
-      //   //   email: user.user.email,
-      //   //   userId: user.user.uid,
-      //   // };
-      //   // await createSignupDoc(googleUser);
-      //   // const data = await getUserData(googleUser.userId);
-      //   // navigation.replace('HomeScreen', {userData: data});
-      // })
-      // .catch(error => {
-      //   const {code, message} = error;
-      //   console.log(error);
-      // });
     } catch (error) {
       if (error.message == 'Sign in action cancelled')
         ToastAndroid.show('User not signed up', ToastAndroid.SHORT);
@@ -217,9 +185,13 @@ function LoginScreen({navigation}) {
 
           <TextInput
             theme={{
-              colors: {primary: colors.logoColor, },
+              colors: {primary: colors.logoColor},
             }}
-            style={{marginVertical: '0.5%', backgroundColor: 'white', borderColor: 'black'}}
+            style={{
+              marginVertical: '0.5%',
+              backgroundColor: 'white',
+              borderColor: 'black',
+            }}
             mode="outlined"
             label={'Name'}
             placeholderTextColor={'black'}
@@ -229,7 +201,11 @@ function LoginScreen({navigation}) {
             theme={{
               colors: {primary: colors.logoColor},
             }}
-            style={{marginVertical: '0.5%', backgroundColor: 'white', borderColor: 'black'}}
+            style={{
+              marginVertical: '0.5%',
+              backgroundColor: 'white',
+              borderColor: 'black',
+            }}
             mode="outlined"
             label={'Email'}
             value={email}
@@ -238,7 +214,12 @@ function LoginScreen({navigation}) {
             theme={{
               colors: {primary: colors.logoColor},
             }}
-            style={{marginVertical: '0.5%', marginBottom: '8%', backgroundColor: 'white', borderColor: 'black'}}
+            style={{
+              marginVertical: '0.5%',
+              marginBottom: '8%',
+              backgroundColor: 'white',
+              borderColor: 'black',
+            }}
             mode="outlined"
             label={'Password'}
             secureTextEntry={true}
@@ -337,7 +318,7 @@ const styles = StyleSheet.create({
     marginTop: '2%',
     fontSize: 15,
     fontWeight: '500',
-    color: 'black'
+    color: 'black',
   },
 });
 
