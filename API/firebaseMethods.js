@@ -5,7 +5,7 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore/lite';
-import {storeDataLocally} from '../app/functions/localStorage';
+import {storeAvatar, storeDataLocally} from '../app/functions/localStorage';
 
 import {db, userId} from '../config/keys';
 
@@ -185,12 +185,17 @@ export const addExpense = async (userData, expenseData) => {
   }
 };
 
-export const chooseGender = async (userData, gender, avatarIndex, avatarLink) => {
+export const chooseGender = async (
+  userData,
+  gender,
+  avatarIndex,
+  avatarLink,
+) => {
   userData.userDetails = {
     ...userData.userDetails,
     gender: gender,
     avatarIndex: avatarIndex,
-    avatarLink: avatarLink
+    avatarLink: avatarLink,
   };
 
   try {
@@ -198,12 +203,13 @@ export const chooseGender = async (userData, gender, avatarIndex, avatarLink) =>
       doc(db, 'users', userData.userDetails.uid),
       userData,
     );
-    storeDataLocally('userData', userData);
+    await storeDataLocally('userData', [userData]);
+    await storeAvatar(avatarLink);
     console.log('Gender Added');
-    return 1
+    return 1;
   } catch (error) {
     console.log('Error in adding gender: ', error);
-    return 0
+    return 0;
   }
 };
 

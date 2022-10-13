@@ -146,7 +146,6 @@ export default function App() {
   useEffect(() => {
     BackgroundService.start(veryIntensiveTask, options);
   }, []);
-
   const setUserDataFxn = async () => {
     const localData = await retrieveData('userData');
     setLocalData(localData);

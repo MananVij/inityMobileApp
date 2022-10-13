@@ -6,6 +6,7 @@ import {
   Image,
   ScrollView,
   View,
+  NativeModules
 } from 'react-native';
 import {signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import {
@@ -29,7 +30,7 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {firebase} from '@react-native-firebase/auth';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import RNFetchBlob from 'rn-fetch-blob';
+const RNFetchBlob = NativeModules.RNFetchBlob
 const {config, fs} = RNFetchBlob;
 
 function LoginScreen({navigation}) {
@@ -54,13 +55,13 @@ function LoginScreen({navigation}) {
         .then(async res => {
           if (authentication.currentUser.emailVerified) {
             const data = await getUserData();
-            storeDataLocally('userData', data);
+            await storeDataLocally('userData', data);
 
             if (data[0].userDetails.gender == '') {
               navigation.replace('SelectProfile', {userData: data});
             } else {
               if (!(await ifAvatarExists())) {
-                storeAvatar(data[0]?.userDetails.avatarLink);
+                await storeAvatar(data[0]?.userDetails.avatarLink);
               }
               navigation.replace('HomeScreen', {userData: userData});
             }
@@ -109,13 +110,13 @@ function LoginScreen({navigation}) {
               await createSignupDoc(googleUser);
             }
             const userData = await getUserData(user.user.uid);
-            storeDataLocally('userData', userData);
+            await storeDataLocally('userData', userData);
 
             if (userData[0]?.userDetails.gender == '') {
               navigation.replace('SelectProfile', {userData: userData});
             } else {
               if (!(await ifAvatarExists())) {
-                storeAvatar(userData[0]?.userDetails.avatarLink);
+                await storeAvatar(userData[0]?.userDetails.avatarLink);
               }
               navigation.replace('HomeScreen', {userData: userData});
             }

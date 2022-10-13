@@ -132,13 +132,13 @@ function LoginScreen({navigation}) {
               await createSignupDoc(googleUser);
             }
             const userData = await getUserData(user.user.uid);
-            storeDataLocally('userData', userData);
+            await storeDataLocally('userData', userData);
 
             if (userData[0]?.userDetails.gender == '') {
               navigation.replace('SelectProfile', {userData: userData});
             } else {
               if (!(await ifAvatarExists())) {
-                storeAvatar(userData[0]?.userDetails.avatarLink);
+                await storeAvatar(userData[0]?.userDetails.avatarLink);
               }
               navigation.replace('HomeScreen', {userData: userData});
             }

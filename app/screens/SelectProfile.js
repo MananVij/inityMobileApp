@@ -7,16 +7,18 @@ import {
   useWindowDimensions,
   ToastAndroid,
   TouchableOpacity,
+  NativeModules,
   PermissionsAndroid,
+  Alert,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {Button, Card, Title} from 'react-native-paper';
 import colors from '../config/colors';
 import {chooseGender} from '../../API/firebaseMethods';
 import {useRoute} from '@react-navigation/native';
-import RNFetchBlob from 'rn-fetch-blob';
 import {base64} from '@firebase/util';
-import {storeAvatar} from '../functions/localStorage';
+import {storeAvatar, storeDataLocally} from '../functions/localStorage';
+const RNFetchBlob = NativeModules.RNFetchBlob;
 const {config, fs} = RNFetchBlob;
 
 export default function SelectProfile({navigation}) {
@@ -26,6 +28,45 @@ export default function SelectProfile({navigation}) {
   const [gender, setGender] = useState('');
   const [avatarIndex, setAvatarIndex] = useState();
   const [avatarLink, setAvatarLink] = useState('');
+  const [loading, setLoading] = useState(false)
+  
+  const submitButton = () => {
+    return (
+      <Button
+        mode="contained"
+        loading={loading}
+        onPress={async () => {
+          setLoading(true)
+          if (gender && avatarIndex != undefined) {
+            const response = await chooseGender(
+              route?.params.userData[0],
+              gender,
+              avatarIndex,
+              avatarLink,
+            );
+            if (response) {
+              navigation.replace('HomeScreen', {
+                userData: route?.params.userData,
+              });
+            } else {
+              ToastAndroid.show('Some Error Occured', ToastAndroid.SHORT);
+            }
+          } else {
+            Alert.alert('Please Choose Avatar');
+          }
+          setLoading(false)
+        }}
+        style={{
+          marginHorizontal: '8%',
+          borderRadius: 13,
+          marginBottom: '3%',
+          backgroundColor: colors.logoColor,
+          color: 'white',
+        }}>
+        Submit
+      </Button>
+    );
+  };
 
   const genderCard = () => {
     return (
@@ -41,6 +82,7 @@ export default function SelectProfile({navigation}) {
           <Card
             onPress={() => {
               setGenderIndex(0);
+              setAvatarIndex();
               setGender('M');
             }}
             style={{
@@ -77,6 +119,7 @@ export default function SelectProfile({navigation}) {
             }}
             onPress={() => {
               setGenderIndex(1);
+              setAvatarIndex();
               setGender('F');
             }}>
             <View
@@ -120,23 +163,29 @@ export default function SelectProfile({navigation}) {
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
-                    setAvatarIndex(1);
+                    setAvatarIndex(0);
                     setAvatarLink(
                       'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F1.png?alt=media&token=ce37820d-bce6-4e86-ae9b-321260a313c1',
                     );
                   }}>
-                    <Image
-                      source={{
-                        uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F1.png?alt=media&token=ce37820d-bce6-4e86-ae9b-321260a313c1',
-                      }}
-                      resizeMode={'contain'}
-                      style={{height: height * 0.18, width: width * 0.56}}
-                    />
+                  <Image
+                    source={{
+                      uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F1.png?alt=media&token=ce37820d-bce6-4e86-ae9b-321260a313c1',
+                    }}
+                    resizeMode={'cover'}
+                    style={{
+                      height: height * 0.18,
+                      width: width * 0.3,
+                      borderColor: colors.green,
+                      borderWidth: avatarIndex == 0 ? 3 : 0,
+                      borderRadius: 22,
+                    }}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
-                    setAvatarIndex(2);
+                    setAvatarIndex(1);
                     setAvatarLink(
                       'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F2.png?alt=media&token=98c6c545-a97e-4f95-bec8-f27e0f131b92',
                     );
@@ -145,8 +194,14 @@ export default function SelectProfile({navigation}) {
                     source={{
                       uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F2.png?alt=media&token=98c6c545-a97e-4f95-bec8-f27e0f131b92',
                     }}
-                    resizeMode={'contain'}
-                    style={{height: height * 0.18, width: width * 0.56}}
+                    resizeMode={'cover'}
+                    style={{
+                      height: height * 0.18,
+                      width: width * 0.3,
+                      borderColor: colors.green,
+                      borderWidth: avatarIndex == 1 ? 3 : 0,
+                      borderRadius: 22,
+                    }}
                   />
                 </TouchableOpacity>
               </View>
@@ -159,7 +214,7 @@ export default function SelectProfile({navigation}) {
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
-                    setAvatarIndex(3);
+                    setAvatarIndex(2);
                     setAvatarLink(
                       'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F3.png?alt=media&token=7d461a5e-f830-4e3c-bbbc-baba65e94474',
                     );
@@ -168,14 +223,20 @@ export default function SelectProfile({navigation}) {
                     source={{
                       uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F3.png?alt=media&token=7d461a5e-f830-4e3c-bbbc-baba65e94474',
                     }}
-                    resizeMode={'contain'}
-                    style={{height: height * 0.18, width: width * 0.56}}
+                    resizeMode={'cover'}
+                    style={{
+                      height: height * 0.18,
+                      width: width * 0.3,
+                      borderColor: colors.green,
+                      borderWidth: avatarIndex == 2 ? 3 : 0,
+                      borderRadius: 22,
+                    }}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
-                    setAvatarIndex(5);
+                    setAvatarIndex(3);
                     setAvatarLink(
                       'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F5.png?alt=media&token=69ac39ab-2cdc-4194-890a-bfd2fcaf919d',
                     );
@@ -184,8 +245,14 @@ export default function SelectProfile({navigation}) {
                     source={{
                       uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F5.png?alt=media&token=69ac39ab-2cdc-4194-890a-bfd2fcaf919d',
                     }}
-                    resizeMode={'contain'}
-                    style={{height: height * 0.18, width: width * 0.56}}
+                    resizeMode={'cover'}
+                    style={{
+                      height: height * 0.18,
+                      width: width * 0.3,
+                      borderColor: colors.green,
+                      borderWidth: avatarIndex == 3 ? 3 : 0,
+                      borderRadius: 22,
+                    }}
                   />
                 </TouchableOpacity>
               </View>
@@ -198,7 +265,7 @@ export default function SelectProfile({navigation}) {
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
-                    setAvatarIndex(6);
+                    setAvatarIndex(4);
                     setAvatarLink(
                       'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F6.png?alt=media&token=b62ec9d5-d06a-42b2-a072-d2344b4cd18c',
                     );
@@ -207,8 +274,14 @@ export default function SelectProfile({navigation}) {
                     source={{
                       uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F6.png?alt=media&token=b62ec9d5-d06a-42b2-a072-d2344b4cd18c',
                     }}
-                    resizeMode={'contain'}
-                    style={{height: height * 0.18, width: width * 0.56}}
+                    resizeMode={'cover'}
+                    style={{
+                      height: height * 0.18,
+                      width: width * 0.3,
+                      borderColor: colors.green,
+                      borderWidth: avatarIndex == 4 ? 3 : 0,
+                      borderRadius: 22,
+                    }}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -217,44 +290,25 @@ export default function SelectProfile({navigation}) {
                     setAvatarLink(
                       'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F7.png?alt=media&token=a0497e73-0b7f-4e6f-9b60-9b1e56884544',
                     );
+                    setAvatarIndex(5);
                   }}>
                   <Image
                     source={{
                       uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F7.png?alt=media&token=a0497e73-0b7f-4e6f-9b60-9b1e56884544',
                     }}
-                    resizeMode={'contain'}
-                    style={{height: height * 0.18, width: width * 0.56}}
+                    resizeMode={'cover'}
+                    style={{
+                      height: height * 0.18,
+                      width: width * 0.3,
+                      borderColor: colors.green,
+                      borderWidth: avatarIndex == 5 ? 3 : 0,
+                      borderRadius: 22,
+                    }}
                   />
                 </TouchableOpacity>
               </View>
             </View>
-            <Button
-              mode="contained"
-              onPress={async () => {
-                const response = await chooseGender(
-                  route?.params.userData[0],
-                  gender,
-                  avatarIndex,
-                  avatarLink,
-                );
-                if (response) {
-                  storeAvatar(avatarLink);
-                  navigation.replace('HomeScreen', {
-                    userData: route?.params.userData,
-                  });
-                } else {
-                  ToastAndroid.show('Some Error Occured', ToastAndroid.SHORT);
-                }
-              }}
-              style={{
-                marginHorizontal: '8%',
-                borderRadius: 13,
-                marginBottom: '3%',
-                backgroundColor: colors.logoColor,
-                color: 'white',
-              }}>
-              Submit
-            </Button>
+            {submitButton()}
           </ScrollView>
         ) : (
           <>
@@ -269,7 +323,7 @@ export default function SelectProfile({navigation}) {
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => {
-                      setAvatarIndex(1);
+                      setAvatarIndex(6);
                       setAvatarLink(
                         'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F1.png?alt=media&token=5986a7da-5474-4d9b-b8c6-e80cefa05d15',
                       );
@@ -278,14 +332,20 @@ export default function SelectProfile({navigation}) {
                       source={{
                         uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F1.png?alt=media&token=5986a7da-5474-4d9b-b8c6-e80cefa05d15',
                       }}
-                      resizeMode={'contain'}
-                      style={{height: height * 0.18, width: width * 0.56}}
+                      resizeMode={'cover'}
+                      style={{
+                        height: height * 0.18,
+                        width: width * 0.3,
+                        borderColor: colors.green,
+                        borderWidth: avatarIndex == 6 ? 3 : 0,
+                        borderRadius: 22,
+                      }}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => {
-                      setAvatarIndex(2);
+                      setAvatarIndex(7);
                       setAvatarLink(
                         'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F2.png?alt=media&token=638469fc-8f9b-4d43-ba73-ebe04b932619',
                       );
@@ -294,8 +354,14 @@ export default function SelectProfile({navigation}) {
                       source={{
                         uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F2.png?alt=media&token=638469fc-8f9b-4d43-ba73-ebe04b932619',
                       }}
-                      resizeMode={'contain'}
-                      style={{height: height * 0.18, width: width * 0.56}}
+                      resizeMode={'cover'}
+                      style={{
+                        height: height * 0.18,
+                        width: width * 0.3,
+                        borderColor: colors.green,
+                        borderWidth: avatarIndex == 7 ? 3 : 0,
+                        borderRadius: 22,
+                      }}
                     />
                   </TouchableOpacity>
                 </View>
@@ -308,7 +374,7 @@ export default function SelectProfile({navigation}) {
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => {
-                      setAvatarIndex(3);
+                      setAvatarIndex(8);
                       setAvatarLink(
                         'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F3.png?alt=media&token=dbd1c830-1b2d-4ae7-b34a-3e63884ec98e',
                       );
@@ -317,14 +383,20 @@ export default function SelectProfile({navigation}) {
                       source={{
                         uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F3.png?alt=media&token=dbd1c830-1b2d-4ae7-b34a-3e63884ec98e',
                       }}
-                      resizeMode={'contain'}
-                      style={{height: height * 0.18, width: width * 0.56}}
+                      resizeMode={'cover'}
+                      style={{
+                        height: height * 0.18,
+                        width: width * 0.3,
+                        borderColor: colors.green,
+                        borderWidth: avatarIndex == 8 ? 3 : 0,
+                        borderRadius: 22,
+                      }}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => {
-                      setAvatarIndex(5);
+                      setAvatarIndex(9);
                       setAvatarLink(
                         'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F8.png?alt=media&token=6860a4c7-8e56-4de3-a61c-7ee5fbdad5ba',
                       );
@@ -333,8 +405,14 @@ export default function SelectProfile({navigation}) {
                       source={{
                         uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F8.png?alt=media&token=6860a4c7-8e56-4de3-a61c-7ee5fbdad5ba',
                       }}
-                      resizeMode={'contain'}
-                      style={{height: height * 0.18, width: width * 0.56}}
+                      resizeMode={'cover'}
+                      style={{
+                        height: height * 0.18,
+                        width: width * 0.3,
+                        borderColor: colors.green,
+                        borderWidth: avatarIndex == 9 ? 3 : 0,
+                        borderRadius: 22,
+                      }}
                     />
                   </TouchableOpacity>
                 </View>
@@ -347,7 +425,7 @@ export default function SelectProfile({navigation}) {
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => {
-                      setAvatarIndex(0);
+                      setAvatarIndex(10);
                       setAvatarLink(
                         'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F0.png?alt=media&token=d545525a-60a6-4482-b81e-1d23acc55a63',
                       );
@@ -356,8 +434,14 @@ export default function SelectProfile({navigation}) {
                       source={{
                         uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F0.png?alt=media&token=d545525a-60a6-4482-b81e-1d23acc55a63',
                       }}
-                      resizeMode={'contain'}
-                      style={{height: height * 0.18, width: width * 0.56}}
+                      resizeMode={'cover'}
+                      style={{
+                        height: height * 0.18,
+                        width: width * 0.3,
+                        borderColor: colors.green,
+                        borderWidth: avatarIndex == 10 ? 3 : 0,
+                        borderRadius: 22,
+                      }}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -366,44 +450,25 @@ export default function SelectProfile({navigation}) {
                       setAvatarLink(
                         'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F4.png?alt=media&token=14192350-585a-491f-ac34-d41dee79d902',
                       );
+                      setAvatarIndex(11);
                     }}>
                     <Image
                       source={{
                         uri: 'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F4.png?alt=media&token=14192350-585a-491f-ac34-d41dee79d902',
                       }}
-                      resizeMode={'contain'}
-                      style={{height: height * 0.18, width: width * 0.56}}
+                      resizeMode={'cover'}
+                      style={{
+                        height: height * 0.18,
+                        width: width * 0.3,
+                        borderColor: colors.green,
+                        borderWidth: avatarIndex == 2 ? 3 : 0,
+                        borderRadius: 22,
+                      }}
                     />
                   </TouchableOpacity>
                 </View>
               </View>
-              <Button
-                mode="contained"
-                onPress={async () => {
-                  const response = await chooseGender(
-                    route?.params.userData[0],
-                    gender,
-                    avatarIndex,
-                    avatarLink,
-                  );
-                  if (response) {
-                    storeAvatar(avatarLink);
-                    navigation.replace('HomeScreen', {
-                      userData: route?.params.userData,
-                    });
-                  } else {
-                    ToastAndroid.show('Some Error Occured', ToastAndroid.SHORT);
-                  }
-                }}
-                style={{
-                  marginHorizontal: '8%',
-                  borderRadius: 13,
-                  marginBottom: '3%',
-                  backgroundColor: colors.logoColor,
-                  color: 'white',
-                }}>
-                Submit
-              </Button>
+              {submitButton()}
             </ScrollView>
           </>
         )}

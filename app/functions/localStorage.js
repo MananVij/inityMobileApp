@@ -1,5 +1,7 @@
 import EncryptedStorage from 'react-native-encrypted-storage';
+import {NativeModules} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
+// const RNFetchBlob = NativeModules.RNFetchBlob
 const {config, fs} = RNFetchBlob;
 
 export async function storeDataLocally(dataName, data) {
@@ -33,7 +35,7 @@ export async function clearStorage() {
 
 export async function storeAvatar(avatarLink) {
   let PictureDir = fs.dirs.PictureDir;
-  RNFetchBlob.config({
+  await RNFetchBlob.config({
     fileCache: true,
     appendExt: 'image/png',
     addAndroidDownloads: {
@@ -52,7 +54,7 @@ export async function storeAvatar(avatarLink) {
 }
 
 export async function ifAvatarExists() {
-  return RNFetchBlob.fs
+  return await RNFetchBlob.fs
     .exists('file:///storage/emulated/0/Pictures/inity_avatar.png')
     .then(res => {
       return res;

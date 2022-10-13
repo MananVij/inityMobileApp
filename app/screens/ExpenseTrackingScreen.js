@@ -208,7 +208,7 @@ const ExpenseTrackingScreen = props => {
               textAnchor="middle"
               style={{fontSize: 25, fontWeight: '600'}}
               x={width * 0.5}
-              y={height * 0.29}
+              y={height * 0.25}
               text={`Expenses\n${totalExpense[idx]}`}
             />
           </View>
@@ -279,161 +279,162 @@ const ExpenseTrackingScreen = props => {
       }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{flexGrow: 1}}
-      >
+        contentContainerStyle={{flexGrow: 1}}>
         {topBar()}
         <View style={{marginBottom: '5%'}}>
-        <Swiper
-        paginationStyle={{bottom: -15}}
-        showsButtons={false} loop={false}>
-          <View>
-            { pieChartData[0] &&  pieChartData[0][0] ? (
-              <>
-                {pieChart(0)}
-                <Text style={styles.monthName}>
-                  {monthNames[d.getMonth()].charAt(0).toUpperCase() +
-                    monthNames[d.getMonth()].slice(1)}
-                </Text>
-                <View>
-                  <VictoryLegend
-                    colorScale={'qualitative'}
-                    height={80}
-                    gutter={40}
-                    x={20}
-                    itemsPerRow={2}
-                    // groupComponent={2}
-                    // orientation={'horizontal'}
-                    data={pieChartLegend[0]}
-                  />
-                </View>
-
-                <View style={{paddingHorizontal: '2%'}}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'flex-end',
-                      marginBottom: '1%',
-                    }}>
-                    <Text style={{fontSize: 17, fontWeight: '700'}}>
-                      Amount (₹)
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 17,
-                        fontWeight: '700',
-                        marginLeft: '5%',
-                      }}>
-                      Percentage
-                    </Text>
+          <Swiper
+            paginationStyle={{bottom: -15}}
+            showsButtons={false}
+            loop={false}>
+            <View>
+              {pieChartData[0]?.length != 0 ? (
+                // { pieChartData[1] &&  pieChartData[0][0] ? (
+                <>
+                  {pieChart(0)}
+                  <Text style={styles.monthName}>
+                    {monthNames[d.getMonth()].charAt(0).toUpperCase() +
+                      monthNames[d.getMonth()].slice(1)}
+                  </Text>
+                  <View>
+                    <VictoryLegend
+                      colorScale={'qualitative'}
+                      height={80}
+                      gutter={40}
+                      x={20}
+                      itemsPerRow={2}
+                      // groupComponent={2}
+                      // orientation={'horizontal'}
+                      data={pieChartLegend[0]}
+                    />
                   </View>
 
-                  {expensesCards(0)}
-                </View>
-              </>
-            ) : (
-              <>
-                <Image
-                  source={require('../../assets/icons/no-expense.png')}
-                  style={{
-                    width: '100%',
-                    height: 300,
-                    resizeMode: 'contain',
-                  }}></Image>
-                <Text
-                  style={{
-                    marginTop: '25%',
-                    fontSize: 23,
-                    fontWeight: '700',
-                    alignSelf: 'center',
-                    color: colors.logoColor,
-                  }}>
-                  wohooo! no expense.
-                </Text>
-              </>
-            )}
-            <View
-              style={{
-                position: 'absolute',
-                bottom: 0,
-              }}>
-              {/* <GoogleAd /> */}
-            </View>
-          </View>
-          <View style={styles.slide2}>
-            { pieChartData[0] && pieChartData[0][1] != undefined ? (
-              <>
-                {pieChart(1)}
-                <Text style={styles.monthName}>
-                  {monthNames[d.getMonth() - 1].charAt(0).toUpperCase() +
-                    monthNames[d.getMonth() - 1].slice(1)}
-                </Text>
-                <View>
-                  <VictoryLegend
-                    colorScale={'qualitative'}
-                    height={80}
-                    gutter={40}
-                    x={20}
-                    itemsPerRow={2}
-                    // groupComponent={2}
-                    // orientation={'horizontal'}
-                    data={pieChartLegend[1]}
-                  />
-                </View>
-
-                <View style={{paddingHorizontal: '2%'}}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'flex-end',
-                      marginBottom: '1%',
-                    }}>
-                    <Text style={{fontSize: 17, fontWeight: '700'}}>
-                      Amount (₹)
-                    </Text>
-                    <Text
+                  <View style={{paddingHorizontal: '2%'}}>
+                    <View
                       style={{
-                        fontSize: 17,
-                        fontWeight: '700',
-                        marginLeft: '5%',
+                        flexDirection: 'row',
+                        justifyContent: 'flex-end',
+                        marginBottom: '1%',
                       }}>
-                      Percentage
-                    </Text>
+                      <Text style={{fontSize: 17, fontWeight: '700'}}>
+                        Amount (₹)
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: '700',
+                          marginLeft: '5%',
+                        }}>
+                        Percentage
+                      </Text>
+                    </View>
+
+                    {categoryExpenses ? expensesCards(0) : <></>}
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Image
+                    source={require('../../assets/icons/no-expense.png')}
+                    style={{
+                      width: '100%',
+                      height: 300,
+                      resizeMode: 'contain',
+                    }}></Image>
+                  <Text
+                    style={{
+                      marginTop: '25%',
+                      fontSize: 23,
+                      fontWeight: '700',
+                      alignSelf: 'center',
+                      color: colors.logoColor,
+                    }}>
+                    wohooo! no expense.
+                  </Text>
+                </>
+              )}
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                }}>
+                {/* <GoogleAd /> */}
+              </View>
+            </View>
+            <View style={styles.slide2}>
+              {pieChartData[1]?.length != 0 ? (
+                // { pieChartData[0] && pieChartData[0][1] != undefined ? (
+                <>
+                  {pieChart(1)}
+                  <Text style={styles.monthName}>
+                    {monthNames[d.getMonth() - 1].charAt(0).toUpperCase() +
+                      monthNames[d.getMonth() - 1].slice(1)}
+                  </Text>
+                  <View>
+                    <VictoryLegend
+                      colorScale={'qualitative'}
+                      height={80}
+                      gutter={40}
+                      x={20}
+                      itemsPerRow={2}
+                      // groupComponent={2}
+                      // orientation={'horizontal'}
+                      data={pieChartLegend[1]}
+                    />
                   </View>
 
-                  {expensesCards(1)}
-                </View>
-              </>
-            ) : (
-              <>
-                <Image
-                  source={require('../../assets/icons/no-expense.png')}
-                  style={{
-                    width: '100%',
-                    height: 300,
-                    resizeMode: 'contain',
-                  }}></Image>
-                <Text
-                  style={{
-                    marginTop: '25%',
-                    fontSize: 23,
-                    fontWeight: '700',
-                    alignSelf: 'center',
-                    color: colors.logoColor,
-                  }}>
-                  wohooo! no expense.
-                </Text>
-              </>
-            )}
-            <View
-              style={{
-                position: 'absolute',
-                bottom: 0,
-              }}>
-              {/* <GoogleAd /> */}
-            </View>
-          </View>
-        </Swiper>
+                  <View style={{paddingHorizontal: '2%'}}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'flex-end',
+                        marginBottom: '1%',
+                      }}>
+                      <Text style={{fontSize: 17, fontWeight: '700'}}>
+                        Amount (₹)
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: '700',
+                          marginLeft: '5%',
+                        }}>
+                        Percentage
+                      </Text>
+                    </View>
 
+                    {categoryExpenses ? expensesCards(1) : <></>}
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Image
+                    source={require('../../assets/icons/no-expense.png')}
+                    style={{
+                      width: '100%',
+                      height: 300,
+                      resizeMode: 'contain',
+                    }}></Image>
+                  <Text
+                    style={{
+                      marginTop: '25%',
+                      fontSize: 23,
+                      fontWeight: '700',
+                      alignSelf: 'center',
+                      color: colors.logoColor,
+                    }}>
+                    wohooo! no expense.
+                  </Text>
+                </>
+              )}
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                }}>
+                {/* <GoogleAd /> */}
+              </View>
+            </View>
+          </Swiper>
         </View>
       </ScrollView>
     </SafeAreaView>

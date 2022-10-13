@@ -139,8 +139,8 @@ android {
         applicationId "com.inity"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "2.0"
+        versionCode 8
+        versionName "1.0.0"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
         if (isNewArchitectureEnabled()) {
@@ -289,7 +289,7 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation platform('com.google.firebase:firebase-bom:30.4.1')
     implementation 'com.google.firebase:firebase-dynamic-links'
-    implementation 'com.google.firebase:firebase-analytics'  
+    implementation 'com.google.firebase:firebase-analytics' 
 
 
     // Add the dependency for the Firebase Authentication library
