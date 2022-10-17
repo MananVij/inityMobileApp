@@ -16,7 +16,44 @@ export async function retrieveData(dataName) {
   try {
     const session = await EncryptedStorage.getItem(String(dataName));
     if (session !== undefined) {
-      return ([JSON.parse(session)]);
+      return [JSON.parse(session)];
+    }
+  } catch (error) {
+    console.log('error in accessing the transactions from storage: ', error);
+  }
+}
+
+// export async function storeTransaction(smsList) {
+//   try {
+//     await EncryptedStorage.setItem(
+//       'user_online_transactions',
+//       JSON.stringify({
+//         ...smsList,
+//       }),
+//     );
+//   } catch (error) {
+//     // There was an error on the native side
+//   }
+// }
+export async function storeTransaction(smsList) {
+  try {
+    // let prev = await retrieveUserSession()
+    console.log((await retrieveUserSession())._id, 'prev terans')
+    await EncryptedStorage.setItem(
+      'user_online_transactions',
+      JSON.stringify([smsList]),
+    );
+  } catch (error) {
+    // There was an error on the native side
+  }
+}
+
+export async function retrieveUserSession() {
+  try {
+    const session = await EncryptedStorage.getItem('user_online_transactions');
+
+    if (session !== undefined) {
+      return JSON.parse(session);
     }
   } catch (error) {
     console.log('error in accessing the transactions from storage: ', error);

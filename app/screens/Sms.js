@@ -6,6 +6,7 @@ import AddExpenseAuto from './AddExpenseAuto';
 import EncryptedStorage from 'react-native-encrypted-storage';
 
 import BackgroundService from 'react-native-background-actions';
+import { retrieveUserSession, storeTransaction } from '../functions/localStorage';
 
 const sleep = time =>
   new Promise(resolve =>
@@ -65,40 +66,13 @@ const Sms = props => {
             JSON.parse(smsList)[0]?.body.includes('credited')) &&
           JSON.parse(smsList)[0]?._id != (await retrieveUserSession())
         ) {
-
-          storeTransaction(JSON.parse(smsList)[0]);
+          
+          await storeTransaction(JSON.parse(smsList)[0]);
           props.pushNotif();
         }
       },
     );
   };
-
-  async function retrieveUserSession() {
-    try {
-      const session = await EncryptedStorage.getItem(
-        'user_online_transactions',
-      );
-
-      if (session !== undefined) {
-        return JSON.parse(session)._id;
-      }
-    } catch (error) {
-      console.log('error in accessing the transactions from storage: ', error);
-    }
-  }
-
-  async function storeTransaction(smsList) {
-    try {
-      await EncryptedStorage.setItem(
-        'user_online_transactions',
-        JSON.stringify({
-          ...smsList,
-        }),
-      );
-    } catch (error) {
-      // There was an error on the native side
-    }
-  }
 
   const veryIntensiveTask = async taskDataArguments => {
     // infinite loop for tracking sms

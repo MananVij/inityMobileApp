@@ -26,6 +26,31 @@ import {useRoute} from '@react-navigation/native';
 import moment from 'moment';
 import SplashScreen from './SplashScreen';
 import GoogleAd from '../components/GoogleAd';
+import { retrieveUserSession } from '../functions/localStorage';
+
+const requestSMSPermission = async () => {
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.READ_SMS,
+      {
+        title: 'Inity Sms Permission',
+        message:
+          'Inity needs access your Sms\'s ' +
+          'so we can track your transactions automatically.',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      },
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      // console.log('SMS Permission Granted');
+    } else {
+      console.log('SMS Permission denied');
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+};
 
 const expenseComponent = (amount, title, type, categories) => {
   return (
@@ -83,6 +108,11 @@ export default function HomeScreen({navigation}, props) {
   useEffect(() => {
     setUserData(route.params.userData);
   }, []);
+  useEffect(() => {
+    (async() => {
+      await requestSMSPermission();
+    })()
+  },[])
 
   const setUserDataFxn = async () => {
     try {

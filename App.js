@@ -39,32 +39,32 @@ import {getUserData} from './API/firebaseMethods';
 import SplashScreen from './app/screens/SplashScreen';
 
 //Local Storage
-import {retrieveData} from './app/functions/localStorage';
+import {retrieveData, retrieveUserSession} from './app/functions/localStorage';
 import NotifService from './app/screens/NotifService';
 
-const requestSMSPermission = async () => {
-  try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.READ_SMS,
-      {
-        title: 'Cool Photo App Camera Permission',
-        message:
-          'Cool Photo App needs access to your camera ' +
-          'so you can take awesome pictures.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      // console.log('SMS Permission Granted');
-    } else {
-      console.log('SMS Permission denied');
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-};
+// const requestSMSPermission = async () => {
+//   try {
+//     const granted = await PermissionsAndroid.request(
+//       PermissionsAndroid.PERMISSIONS.READ_SMS,
+//       {
+//         title: 'Cool Photo App Camera Permission',
+//         message:
+//           'Cool Photo App needs access to your camera ' +
+//           'so you can take awesome pictures.',
+//         buttonNeutral: 'Ask Me Later',
+//         buttonNegative: 'Cancel',
+//         buttonPositive: 'OK',
+//       },
+//     );
+//     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+//       // console.log('SMS Permission Granted');
+//     } else {
+//       console.log('SMS Permission denied');
+//     }
+//   } catch (err) {
+//     console.warn(err);
+//   }
+// };
 
 //   try {
 //     const granted = await PermissionsAndroid.request(
@@ -128,9 +128,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [localData, setLocalData] = useState([]);
 
-  useEffect(() => {
-    requestSMSPermission();
-  }, []);
+  // useEffect(() => {
+  //   requestSMSPermission();
+  // }, []);
   useEffect(() => {
     NetInfo.addEventListener(state => {
       setIsOnline(state.isConnected);
@@ -144,8 +144,15 @@ export default function App() {
   }, [isOnline]);
 
   useEffect(() => {
-    BackgroundService.start(veryIntensiveTask, options);
+    PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS).then(
+      res => {
+        if (res) {
+          BackgroundService.start(veryIntensiveTask, options);
+        }
+      },
+    );
   }, []);
+
   const setUserDataFxn = async () => {
     const localData = await retrieveData('userData');
     setLocalData(localData);
@@ -195,7 +202,7 @@ export default function App() {
       fail => {
         console.log('fail: ', fail);
       },
-      (count, smsList) => {
+      async (count, smsList) => {
         if (
           JSON.parse(smsList)[0]?.body.includes('debited') ||
           JSON.parse(smsList)[0]?.body.includes('spent')

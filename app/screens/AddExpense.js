@@ -85,7 +85,7 @@ export default function AddExpense() {
       try {
         addExpense(route?.params.userData, expenseData);
         showToast('Expense Added');
-        navigation.navigate('HomeScreen')
+        navigation.navigate('HomeScreen', {userData: route?.params.userData}) /// added here
       } catch (e) {
         console.log('error in uploading document: ', e);
         showToast('Some Error Occured. Please try again!');
@@ -217,7 +217,7 @@ export default function AddExpense() {
         </View>
         {addCategoryDialog()}
         <View bounces={false}>
-          <View style={{}}>
+          {/* <View style={{}}> */}
             <View
               style={{
                 flexWrap: 'wrap',
@@ -230,11 +230,10 @@ export default function AddExpense() {
               <Text style={{fontSize: 60}}>₹</Text>
               <TextInput
                 mode="outlined"
-                placeholder="1"
+                placeholder="0"
                 keyboardType="numeric"
                 outlineColor="transparent"
                 activeOutlineColor="transparent"
-                ty
                 style={{
                   flexWrap: 'wrap',
                   backgroundColor: 'transparent',
@@ -325,7 +324,7 @@ export default function AddExpense() {
                 onCancel={cancelDatePicker}
               />
             </View>
-          </View>
+          {/* </View> */}
           <Button
             labelStyle={{color: 'white'}}
             mode="contained"

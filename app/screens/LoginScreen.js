@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -6,7 +6,8 @@ import {
   Image,
   ScrollView,
   View,
-  NativeModules
+  NativeModules,
+  PermissionsAndroid
 } from 'react-native';
 import {signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import {
@@ -33,7 +34,39 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 const RNFetchBlob = NativeModules.RNFetchBlob
 const {config, fs} = RNFetchBlob;
 
+const requestStoragePermissions = async () => {
+  try {
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+    ],
+      {
+        title: 'Inity needs Storage Access',
+        message:
+          'Inity needs access to your storage ' +
+          'to save your expenses to your phone.',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      },
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      // console.log('SMS Permission Granted');
+    } else {
+      console.log('SMS Permission denied');
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
 function LoginScreen({navigation}) {
+
+  useEffect(() => {
+    (async() => {
+      await requestStoragePermissions()
+    })()
+  },[])
   GoogleSignin.configure({
     webClientId: webClientId,
   });
@@ -63,7 +96,7 @@ function LoginScreen({navigation}) {
               if (!(await ifAvatarExists())) {
                 await storeAvatar(data[0]?.userDetails.avatarLink);
               }
-              navigation.replace('HomeScreen', {userData: userData});
+              navigation.replace('HomeScreen', {userData: data});
             }
           } else {
             signOut(authentication)
