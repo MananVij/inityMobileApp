@@ -13,7 +13,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import Moment from 'react-moment';
 import colors from '../config/colors';
 import moment from 'moment';
-import {addExpense, addCategory} from '../../API/firebaseMethods';
+import {addExpense, addCategory, getUserData} from '../../API/firebaseMethods';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
 
@@ -85,7 +85,7 @@ export default function AddExpense() {
       try {
         addExpense(route?.params.userData, expenseData);
         showToast('Expense Added');
-        navigation.navigate('HomeScreen', {userData: route?.params.userData}) /// added here
+        navigation.navigate('HomeScreen', {userData: route?.params.userData}) 
       } catch (e) {
         console.log('error in uploading document: ', e);
         showToast('Some Error Occured. Please try again!');

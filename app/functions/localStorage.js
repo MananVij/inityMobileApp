@@ -1,7 +1,5 @@
 import EncryptedStorage from 'react-native-encrypted-storage';
-import {NativeModules} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-// const RNFetchBlob = NativeModules.RNFetchBlob
 const {config, fs} = RNFetchBlob;
 
 export async function storeDataLocally(dataName, data) {
@@ -23,28 +21,62 @@ export async function retrieveData(dataName) {
   }
 }
 
-// export async function storeTransaction(smsList) {
-//   try {
-//     await EncryptedStorage.setItem(
-//       'user_online_transactions',
-//       JSON.stringify({
-//         ...smsList,
-//       }),
-//     );
-//   } catch (error) {
-//     // There was an error on the native side
-//   }
-// }
 export async function storeTransaction(smsList) {
   try {
-    // let prev = await retrieveUserSession()
-    console.log((await retrieveUserSession())._id, 'prev terans')
     await EncryptedStorage.setItem(
       'user_online_transactions',
-      JSON.stringify([smsList]),
+      JSON.stringify({
+        ...smsList,
+      }),
     );
   } catch (error) {
     // There was an error on the native side
+  }
+}
+
+export async function storeTxn(list, name) {
+  let prevMsgs = await findTxn(name);
+  if (prevMsgs != null) {
+    prevMsgs.push(list);
+  } else {
+    prevMsgs = [list];
+  }
+  try {
+    await EncryptedStorage.setItem(name, JSON.stringify(prevMsgs));
+    return prevMsgs;
+  } catch (error) {
+    // There was an error on the native side
+  }
+}
+
+export async function removeTxn() {
+  let prevMsgs = await findTxn('txn');
+  prevMsgs.shift();
+  if (prevMsgs.length == 0) {
+    //remove the session
+    try {
+      await EncryptedStorage.removeItem('txn');
+    } catch (error) {
+      // There was an error on the native side
+    }
+  } else {
+    try {
+      await EncryptedStorage.setItem('txn', JSON.stringify(prevMsgs));
+    } catch (error) {
+      // There was an error on the native side
+    }
+  }
+}
+
+export async function findTxn(name) {
+  try {
+    const session = await EncryptedStorage.getItem(name);
+
+    if (session !== undefined) {
+      return JSON.parse(session);
+    }
+  } catch (error) {
+    console.log('error in accessing the transactions from storage: ', error);
   }
 }
 

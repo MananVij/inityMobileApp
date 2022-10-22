@@ -39,80 +39,7 @@ import {getUserData} from './API/firebaseMethods';
 import SplashScreen from './app/screens/SplashScreen';
 
 //Local Storage
-import {retrieveData, retrieveUserSession} from './app/functions/localStorage';
-import NotifService from './app/screens/NotifService';
-
-// const requestSMSPermission = async () => {
-//   try {
-//     const granted = await PermissionsAndroid.request(
-//       PermissionsAndroid.PERMISSIONS.READ_SMS,
-//       {
-//         title: 'Cool Photo App Camera Permission',
-//         message:
-//           'Cool Photo App needs access to your camera ' +
-//           'so you can take awesome pictures.',
-//         buttonNeutral: 'Ask Me Later',
-//         buttonNegative: 'Cancel',
-//         buttonPositive: 'OK',
-//       },
-//     );
-//     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-//       // console.log('SMS Permission Granted');
-//     } else {
-//       console.log('SMS Permission denied');
-//     }
-//   } catch (err) {
-//     console.warn(err);
-//   }
-// };
-
-//   try {
-//     const granted = await PermissionsAndroid.request(
-//       // PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-//       PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-//       {
-//         title: 'Inity requires Location Permission',
-//         message:
-//           'We needs access to your location ' +
-//           'so you we take track offline expenses.',
-//         buttonNeutral: 'Ask Me Later',
-//         buttonNegative: 'Cancel',
-//         buttonPositive: 'OK',
-//       },
-//     );
-//     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-//       // console.log('Background Location Permission Granted');
-//     } else {
-//       console.log('Background Location Permission denied');
-//     }
-//   } catch (err) {
-//     console.warn(err);
-//   }
-// };
-// const requestLocationPermission = async () => {
-//   try {
-//     const granted = await PermissionsAndroid.request(
-//       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-//       // PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION],
-//       {
-//         title: 'Inity requires Location Permission',
-//         message:
-//           'We needs access to your location ' +
-//           'so you we take track offline expenses.',
-//         buttonNeutral: 'Ask Me Later',
-//         buttonNegative: 'Cancel',
-//         buttonPositive: 'OK',
-//       },
-//     );
-//     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-//       // console.log('Location Permission Granted');
-//     } else {
-//       console.log('Location Permission denied');
-//     }
-//   } catch (err) {
-//     console.warn(err);
-//   }
-// };
+import {findTxn, retrieveData, storeTxn} from './app/functions/localStorage';
 
 export default function App() {
   const pushNotification = data => {
@@ -127,10 +54,8 @@ export default function App() {
   const [user, setUser] = useState();
   const [loading, setLoading] = useState(true);
   const [localData, setLocalData] = useState([]);
+  const [trans, setTrans] = useState();
 
-  // useEffect(() => {
-  //   requestSMSPermission();
-  // }, []);
   useEffect(() => {
     NetInfo.addEventListener(state => {
       setIsOnline(state.isConnected);
@@ -142,6 +67,13 @@ export default function App() {
       setUserDataFxn();
     })();
   }, [isOnline]);
+
+  useEffect(() => {
+    (async () => {
+      const prevTrans = await findTxn('txn');
+      setTrans(prevTrans);
+    })();
+  }, []);
 
   useEffect(() => {
     PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS).then(
@@ -207,13 +139,17 @@ export default function App() {
           JSON.parse(smsList)[0]?.body.includes('debited') ||
           JSON.parse(smsList)[0]?.body.includes('spent')
         ) {
-          const amount = getAmount(JSON.parse(smsList)[0].body);
-          let date = moment(
-            new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
-          ).format('DD-MM-YYYY');
-          setSms([JSON.parse(smsList)[0]]);
-          setAmount(amount);
-          setDate(date);
+          const trans = await findTxn('txnId');
+          if (
+            trans == null ||
+            JSON.parse(smsList)[0]?._id > trans[trans.length - 1]
+          ) {
+            const sms = await storeTxn(JSON.parse(smsList)[0], 'txn');
+            await storeTxn(JSON.parse(smsList)[0]?._id, 'txnId');
+            setTrans(sms);
+            const amount = getAmount(sms[0]?.body);
+            setAmount(amount);
+          }
         }
       },
     );
@@ -240,7 +176,7 @@ export default function App() {
       name: 'ic_launcher',
       type: 'mipmap',
     },
-    linkingURI: 'https://inityappindia.page.link/verify', // See Deep Linking for more info
+    linkingURI: 'https://play.google.com/store/apps/details?id=com.inity', // See Deep Linking for more info
     parameters: {
       delay: 1000,
     },
@@ -265,7 +201,8 @@ export default function App() {
                       options={{headerShown: false}}
                       initialParams={{userData: userData}}
                       name="HomeScreen"
-                      component={HomeScreen}></Stack.Screen>
+                      component={HomeScreen}
+                    />
                     <Stack.Screen
                       options={{headerShown: false}}
                       name="AddExpense"
@@ -309,13 +246,14 @@ export default function App() {
                   </>
                 ) : (
                   <>
-                    {!sms[0] ? (
+                    {!trans ? (
                       <>
                         <Stack.Screen
                           options={{headerShown: false}}
                           initialParams={{userData: userData}}
                           name="HomeScreen"
-                          component={HomeScreen}></Stack.Screen>
+                          component={HomeScreen}
+                        />
                         <Stack.Screen
                           options={{headerShown: false}}
                           name="AddExpense"
@@ -372,9 +310,8 @@ export default function App() {
                               {...props}
                               userData={userData[0]}
                               amount={amount}
-                              date={date}
-                              msg={sms}
-                              setSms={setSms}
+                              trans={trans}
+                              setTrans={setTrans}
                             />
                           )}
                         </Stack.Screen>
@@ -414,7 +351,8 @@ export default function App() {
                   options={{headerShown: false}}
                   initialParams={{userData: userData[0]}}
                   name="HomeScreen"
-                  component={HomeScreen}></Stack.Screen>
+                  component={HomeScreen}
+                />
                 <Stack.Screen
                   options={{headerShown: false}}
                   name="AddExpense"
@@ -455,12 +393,3 @@ export default function App() {
   );
 }
 const Stack = createNativeStackNavigator();
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

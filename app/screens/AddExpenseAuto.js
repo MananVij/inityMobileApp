@@ -8,8 +8,6 @@ import {
   BackHandler,
 } from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import Moment from 'react-moment';
 import moment from 'moment';
 import {addExpense, addCategory} from '../../API/firebaseMethods';
 import RBSheet from 'react-native-raw-bottom-sheet';
@@ -24,8 +22,11 @@ import {
 } from 'react-native-paper';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import colors from '../config/colors';
+import {findTxn, removeTxn} from '../functions/localStorage';
+import {getAmount} from '../functions/getAmount';
 
 export default function AddExpense(props) {
+
   const showToast = toastMsg => {
     ToastAndroid.show(toastMsg, ToastAndroid.SHORT);
   };
@@ -51,8 +52,10 @@ export default function AddExpense(props) {
         },
         {
           text: 'YES',
-          onPress: () => {
-            props.newSms([]);
+          onPress: async () => {
+            await removeTxn();
+            const trans = await findTxn('txn');
+            props.setTrans(trans);
           },
         },
       ]);
@@ -67,11 +70,16 @@ export default function AddExpense(props) {
   }, []);
 
   useEffect(() => {
-    let date = moment(
-      new Date().toISOString(undefined, {timeZone: 'Asia/Kolkata'}),
-    ).format('DD-MM-YYYY');
+    (async () => {
+      const amount = getAmount(props.trans[0]?.body);
+      setAmount(amount);
+    })();
+  }, [props.trans[0]?._id]);
+
+  useEffect(() => {
+    let date = moment(props.trans[0]?.date_sent).format('DD-MM-YYYY');
     setDateSelected(date);
-  }, []);
+  }, [props]);
 
   const UploadDocs = async () => {
     if (!amount) {
@@ -84,8 +92,8 @@ export default function AddExpense(props) {
       Alert.alert('Please select category of expense.');
     } else {
       const expenseData = {
-        amount: props.amount,
-        date: props.date,
+        amount: amount,
+        date: dateSelected,
         category: category,
         type: note,
       };
@@ -245,7 +253,7 @@ export default function AddExpense(props) {
                   flexDirection: 'row',
                   justifyContent: 'center',
                 }}
-                value={props.amount}
+                value={amount}
                 editable={false}
               />
             </View>
@@ -299,23 +307,19 @@ export default function AddExpense(props) {
                 right={
                   <TextInput.Icon
                     icon="calendar"
-                    // onPress={() => {
-                    //   showDatePicker();
-                    // }}
                   />
                 }
               />
-              {/* <DateTimePickerModal
-              isVisible={isDatePickerVisible}
-              mode="date"
-              onConfirm={handleConfirm}
-              onCancel={cancelDatePicker}
-            /> */}
             </View>
           </View>
           <Button
             mode="contained"
-            onPress={UploadDocs}
+            onPress={async () => {
+              UploadDocs();
+              await removeTxn();
+              const trans = await findTxn('txn');
+              props.setTrans(trans);
+            }}
             style={{
               marginTop: '5%',
             }}>

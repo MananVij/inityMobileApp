@@ -8,18 +8,17 @@ import {
   ToastAndroid,
   TouchableOpacity,
   NativeModules,
-  PermissionsAndroid,
   Alert,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Button, Card, Title} from 'react-native-paper';
 import colors from '../config/colors';
 import {chooseGender} from '../../API/firebaseMethods';
 import {useRoute} from '@react-navigation/native';
-import {base64} from '@firebase/util';
-import {storeAvatar, storeDataLocally} from '../functions/localStorage';
 const RNFetchBlob = NativeModules.RNFetchBlob;
 const {config, fs} = RNFetchBlob;
+
+import {Skeleton} from '@rneui/themed';
 
 export default function SelectProfile({navigation}) {
   const route = useRoute();
@@ -28,15 +27,17 @@ export default function SelectProfile({navigation}) {
   const [gender, setGender] = useState('');
   const [avatarIndex, setAvatarIndex] = useState();
   const [avatarLink, setAvatarLink] = useState('');
-  const [loading, setLoading] = useState(false)
-  
+  const [loading, setLoading] = useState(false);
+
+  const [imageLoading, setImageLoading] = useState(true);
+
   const submitButton = () => {
     return (
       <Button
         mode="contained"
         loading={loading}
         onPress={async () => {
-          setLoading(true)
+          setLoading(true);
           if (gender && avatarIndex != undefined) {
             const response = await chooseGender(
               route?.params.userData[0],
@@ -54,7 +55,7 @@ export default function SelectProfile({navigation}) {
           } else {
             Alert.alert('Please Choose Avatar');
           }
-          setLoading(false)
+          setLoading(false);
         }}
         style={{
           marginHorizontal: '8%',
@@ -146,6 +147,39 @@ export default function SelectProfile({navigation}) {
     );
   };
 
+  const skeleton = () => {
+    return (
+      <Skeleton
+        height={height * 0.18}
+        width={width * 0.3}
+        animation={'pulse'}
+        style={{
+          borderRadius: 22,
+          display: imageLoading ? 'flex' : 'none',
+        }}></Skeleton>
+    );
+  };
+
+  useEffect(() => {
+    const urls = [
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F1.png?alt=media&token=ce37820d-bce6-4e86-ae9b-321260a313c1',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F2.png?alt=media&token=98c6c545-a97e-4f95-bec8-f27e0f131b92',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F3.png?alt=media&token=7d461a5e-f830-4e3c-bbbc-baba65e94474',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F5.png?alt=media&token=69ac39ab-2cdc-4194-890a-bfd2fcaf919d',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F6.png?alt=media&token=b62ec9d5-d06a-42b2-a072-d2344b4cd18c',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fmen%2F7.png?alt=media&token=a0497e73-0b7f-4e6f-9b60-9b1e56884544',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F1.png?alt=media&token=5986a7da-5474-4d9b-b8c6-e80cefa05d15',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F2.png?alt=media&token=638469fc-8f9b-4d43-ba73-ebe04b932619',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F3.png?alt=media&token=dbd1c830-1b2d-4ae7-b34a-3e63884ec98e',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F8.png?alt=media&token=6860a4c7-8e56-4de3-a61c-7ee5fbdad5ba',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F0.png?alt=media&token=d545525a-60a6-4482-b81e-1d23acc55a63',
+      'https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/avatars%2Fwomen%2F4.png?alt=media&token=14192350-585a-491f-ac34-d41dee79d902',
+    ];
+    Promise.all(urls.map(url => fetch(url))).then(() => {
+      setImageLoading(false);
+    });
+  }, []);
+
   const avatarCard = () => {
     return (
       <>
@@ -179,8 +213,10 @@ export default function SelectProfile({navigation}) {
                       borderColor: colors.green,
                       borderWidth: avatarIndex == 0 ? 3 : 0,
                       borderRadius: 22,
+                      display: imageLoading ? 'none' : 'flex',
                     }}
                   />
+                  {skeleton()}
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -201,8 +237,10 @@ export default function SelectProfile({navigation}) {
                       borderColor: colors.green,
                       borderWidth: avatarIndex == 1 ? 3 : 0,
                       borderRadius: 22,
+                      display: imageLoading ? 'none' : 'flex',
                     }}
                   />
+                  {skeleton()}
                 </TouchableOpacity>
               </View>
               <View
@@ -230,8 +268,10 @@ export default function SelectProfile({navigation}) {
                       borderColor: colors.green,
                       borderWidth: avatarIndex == 2 ? 3 : 0,
                       borderRadius: 22,
+                      display: imageLoading ? 'none' : 'flex',
                     }}
                   />
+                  {skeleton()}
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -252,8 +292,10 @@ export default function SelectProfile({navigation}) {
                       borderColor: colors.green,
                       borderWidth: avatarIndex == 3 ? 3 : 0,
                       borderRadius: 22,
+                      display: imageLoading ? 'none' : 'flex',
                     }}
                   />
+                  {skeleton()}
                 </TouchableOpacity>
               </View>
               <View
@@ -281,8 +323,10 @@ export default function SelectProfile({navigation}) {
                       borderColor: colors.green,
                       borderWidth: avatarIndex == 4 ? 3 : 0,
                       borderRadius: 22,
+                      display: imageLoading ? 'none' : 'flex',
                     }}
                   />
+                  {skeleton()}
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -303,8 +347,10 @@ export default function SelectProfile({navigation}) {
                       borderColor: colors.green,
                       borderWidth: avatarIndex == 5 ? 3 : 0,
                       borderRadius: 22,
+                      display: imageLoading ? 'none' : 'flex',
                     }}
                   />
+                  {skeleton()}
                 </TouchableOpacity>
               </View>
             </View>
@@ -319,6 +365,7 @@ export default function SelectProfile({navigation}) {
                     flexDirection: 'row',
                     justifyContent: 'space-around',
                     marginBottom: '5%',
+                    alignItems: 'center',
                   }}>
                   <TouchableOpacity
                     activeOpacity={0.7}
@@ -339,8 +386,10 @@ export default function SelectProfile({navigation}) {
                         borderColor: colors.green,
                         borderWidth: avatarIndex == 6 ? 3 : 0,
                         borderRadius: 22,
+                        display: imageLoading ? 'none' : 'flex',
                       }}
                     />
+                    {skeleton()}
                   </TouchableOpacity>
                   <TouchableOpacity
                     activeOpacity={0.7}
@@ -361,8 +410,10 @@ export default function SelectProfile({navigation}) {
                         borderColor: colors.green,
                         borderWidth: avatarIndex == 7 ? 3 : 0,
                         borderRadius: 22,
+                        display: imageLoading ? 'none' : 'flex',
                       }}
                     />
+                    {skeleton()}
                   </TouchableOpacity>
                 </View>
                 <View
@@ -390,8 +441,10 @@ export default function SelectProfile({navigation}) {
                         borderColor: colors.green,
                         borderWidth: avatarIndex == 8 ? 3 : 0,
                         borderRadius: 22,
+                        display: imageLoading ? 'none' : 'flex',
                       }}
                     />
+                    {skeleton()}
                   </TouchableOpacity>
                   <TouchableOpacity
                     activeOpacity={0.7}
@@ -412,8 +465,10 @@ export default function SelectProfile({navigation}) {
                         borderColor: colors.green,
                         borderWidth: avatarIndex == 9 ? 3 : 0,
                         borderRadius: 22,
+                        display: imageLoading ? 'none' : 'flex',
                       }}
                     />
+                    {skeleton()}
                   </TouchableOpacity>
                 </View>
                 <View
@@ -441,8 +496,10 @@ export default function SelectProfile({navigation}) {
                         borderColor: colors.green,
                         borderWidth: avatarIndex == 10 ? 3 : 0,
                         borderRadius: 22,
+                        display: imageLoading ? 'none' : 'flex',
                       }}
                     />
+                    {skeleton()}
                   </TouchableOpacity>
                   <TouchableOpacity
                     activeOpacity={0.7}
@@ -463,8 +520,10 @@ export default function SelectProfile({navigation}) {
                         borderColor: colors.green,
                         borderWidth: avatarIndex == 2 ? 3 : 0,
                         borderRadius: 22,
+                        display: imageLoading ? 'none' : 'flex',
                       }}
                     />
+                    {skeleton()}
                   </TouchableOpacity>
                 </View>
               </View>

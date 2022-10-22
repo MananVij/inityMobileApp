@@ -1,4 +1,3 @@
-import { useRoute } from '@react-navigation/native';
 import React, {Component} from 'react';
 import {Alert, View} from 'react-native';
 import NotifService from './NotifService';
@@ -34,9 +33,8 @@ export default class NewScreen extends Component {
         <Sms
         pushNotif={this.pushNotif}
         amount={this.props.amount}
-        newSms={this.props.setSms}
-        date={this.props.date}
-        msg={this.props.msg}
+        trans={this.props.trans}
+        setTrans={this.props.setTrans}
         userData={[this.props.userData]}
         ></Sms>
     );

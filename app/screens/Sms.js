@@ -1,12 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import SmsListener from 'react-native-android-sms-listener';
 import SmsAndroid from 'react-native-get-sms-android';
-import moment from 'moment';
 import AddExpenseAuto from './AddExpenseAuto';
-import EncryptedStorage from 'react-native-encrypted-storage';
 
 import BackgroundService from 'react-native-background-actions';
-import { retrieveUserSession, storeTransaction } from '../functions/localStorage';
+import {retrieveUserSession, storeTransaction} from '../functions/localStorage';
 
 const sleep = time =>
   new Promise(resolve =>
@@ -64,9 +62,8 @@ const Sms = props => {
           (JSON.parse(smsList)[0]?.body.includes('debited') ||
             JSON.parse(smsList)[0]?.body.includes('spent') ||
             JSON.parse(smsList)[0]?.body.includes('credited')) &&
-          JSON.parse(smsList)[0]?._id != (await retrieveUserSession())
+          JSON.parse(smsList)[0]?._id != (await retrieveUserSession())?._id
         ) {
-          
           await storeTransaction(JSON.parse(smsList)[0]);
           props.pushNotif();
         }
@@ -85,23 +82,14 @@ const Sms = props => {
     });
   };
 
-  try {
-    let subscription = SmsListener.addListener(message => {
-      subscription.remove();
-    });
-  } catch (error) {
-    console.log(error);
-  }
-
   useEffect(() => {
     BackgroundService.start(veryIntensiveTask, options);
   }, []);
   return (
     <AddExpenseAuto
       userData={props.userData}
-      date={props.date}
-      msg={props.msg}
-      newSms={props.newSms}
+      trans={props.trans}
+      setTrans={props.setTrans}
       amount={props.amount}></AddExpenseAuto>
   );
 };
