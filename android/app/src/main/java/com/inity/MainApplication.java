@@ -6,7 +6,6 @@ import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.reactnativegooglesignin.RNGoogleSigninPackage;
 import com.centaurwarchief.smslistener.SmsListenerPackage;
-import com.ocetnik.timer.BackgroundTimerPackage;
 import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
 import com.react.SmsPackage;
 import com.horcrux.svg.SvgPackage;

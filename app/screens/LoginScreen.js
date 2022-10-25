@@ -7,7 +7,7 @@ import {
   ScrollView,
   View,
   NativeModules,
-  PermissionsAndroid
+  PermissionsAndroid,
 } from 'react-native';
 import {signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import {
@@ -31,15 +31,18 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {firebase} from '@react-native-firebase/auth';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-const RNFetchBlob = NativeModules.RNFetchBlob
+import TextInputModified from '../components/TextInputModified';
+
+const RNFetchBlob = NativeModules.RNFetchBlob;
 const {config, fs} = RNFetchBlob;
 
 const requestStoragePermissions = async () => {
   try {
-    const granted = await PermissionsAndroid.requestMultiple([
-      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-    ],
+    const granted = await PermissionsAndroid.requestMultiple(
+      [
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      ],
       {
         title: 'Inity needs Storage Access',
         message:
@@ -58,15 +61,14 @@ const requestStoragePermissions = async () => {
   } catch (err) {
     console.warn(err);
   }
-}
+};
 
 function LoginScreen({navigation}) {
-
   useEffect(() => {
-    (async() => {
-      await requestStoragePermissions()
-    })()
-  },[])
+    (async () => {
+      await requestStoragePermissions();
+    })();
+  }, []);
   GoogleSignin.configure({
     webClientId: webClientId,
   });
@@ -195,26 +197,8 @@ function LoginScreen({navigation}) {
               marginBottom: '15%',
             }}></Image>
           <Text style={styles.heading}>Login</Text>
-
-          <TextInput
-            theme={{
-              colors: {primary: colors.logoColor, placeholder: 'white'},
-            }}
-            style={{marginVertical: '0.5%', backgroundColor: 'white'}}
-            mode="outlined"
-            label={'Email'}
-            value={email}
-            onChangeText={email => setEmail(email)}></TextInput>
-          <TextInput
-            theme={{
-              colors: {primary: colors.logoColor},
-            }}
-            style={{marginVertical: '0.5%', backgroundColor: 'white'}}
-            mode="outlined"
-            label={'Password'}
-            value={password}
-            secureTextEntry={true}
-            onChangeText={password => setPassword(password)}></TextInput>
+          {TextInputModified('Email', false, true, email, setEmail)}
+          {TextInputModified('Password', true, false, password, setPassword)}
           <TouchableOpacity
             onPress={() => {
               navigation.navigate('ResetPasswordScreen');
@@ -253,11 +237,6 @@ function LoginScreen({navigation}) {
               </Text>
             </View>
           </TouchableOpacity>
-          {/* <GoogleSigninButton
-            style={{width: '100%', height: 52, }}
-            onPress={async () => {
-              await googleSignIn();
-            }}></GoogleSigninButton> */}
           <Text style={styles.signupText}>
             Don't have an account?{' '}
             <Text

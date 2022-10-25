@@ -1,11 +1,11 @@
 import {
   View,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   ToastAndroid,
   BackHandler,
+  TextInput,
 } from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
 import moment from 'moment';
@@ -16,17 +16,16 @@ import {
   Portal,
   Dialog,
   Paragraph,
-  TextInput,
   Provider,
   Text,
+  ActivityIndicator,
 } from 'react-native-paper';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import colors from '../config/colors';
 import {findTxn, removeTxn} from '../functions/localStorage';
 import {getAmount} from '../functions/getAmount';
+import TextInputModified from '../components/TextInputModified';
 
 export default function AddExpense(props) {
-
   const showToast = toastMsg => {
     ToastAndroid.show(toastMsg, ToastAndroid.SHORT);
   };
@@ -41,6 +40,8 @@ export default function AddExpense(props) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryEmoji, setNewCategoryEmoji] = useState('');
   const [visible, setVisible] = useState(false);
+  const [loader, setLoader] = useState(false);
+  const [backLoader, setBackLoader] = useState(false);
 
   useEffect(() => {
     const backAction = () => {
@@ -53,9 +54,11 @@ export default function AddExpense(props) {
         {
           text: 'YES',
           onPress: async () => {
+            setBackLoader(true);
             await removeTxn();
             const trans = await findTxn('txn');
             props.setTrans(trans);
+            setBackLoader(false);
           },
         },
       ]);
@@ -218,6 +221,7 @@ export default function AddExpense(props) {
               fontWeight: '700',
               fontSize: 40,
               paddingTop: '30%',
+              color: 'black',
             }}
             variant="headlineSmall">
             Expense
@@ -225,100 +229,102 @@ export default function AddExpense(props) {
         </View>
         {addCategoryDialog()}
         <View bounces={false}>
-          <View style={{}}>
-            <View
+          <View
+            style={{
+              flexWrap: 'wrap',
+              alignSelf: 'center',
+              marginTop: 50,
+              marginBottom: 60,
+              flexDirection: 'row',
+            }}>
+            <Text style={{fontSize: 60, color: 'black'}}>₹</Text>
+            <TextInput
+              placeholder="0"
+              numberOfLines={1}
+              maxLength={6}
+              keyboardType="numeric"
               style={{
                 flexWrap: 'wrap',
-                alignSelf: 'center',
-                borderBottomWidth: 2,
-                marginTop: 50,
-                marginBottom: 60,
+                borderBottomWidth: 1,
+                fontSize: 75,
+                height: 100,
+                fontWeight: '500',
                 flexDirection: 'row',
-              }}>
-              <Text style={{fontSize: 60}}>₹</Text>
-              <TextInput
-                mode="outlined"
-                placeholder="1"
-                keyboardType="numeric"
-                outlineColor="transparent"
-                activeOutlineColor="transparent"
-                style={{
-                  flexWrap: 'wrap',
-                  backgroundColor: 'transparent',
-                  fontSize: 75,
-                  height: 75,
-                  textDecorationLine: 'underline',
-                  textDecorationColor: 'black',
-                  fontWeight: '500',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                }}
-                value={amount}
-                editable={false}
-              />
+                justifyContent: 'center',
+                color: 'black',
+              }}
+              value={amount}
+              editable={false}></TextInput>
+          </View>
+          <View
+            style={{
+              flexWrap: 'wrap',
+              flexDirection: 'row',
+              alignSelf: 'center',
+            }}>
+            <Button
+              mode="contained-tonal"
+              style={{
+                width: '48%',
+                marginRight: '2%',
+                backgroundColor: '#00B4D8',
+              }}
+              labelStyle={{color: 'white'}}>
+              Card 💳
+            </Button>
+            <Button
+              onPress={() => refRBSheet.current.open()}
+              style={{width: '48%', backgroundColor: '#00B4D8'}}
+              labelStyle={{color: 'white'}}
+              dark={false}
+              mode={'contained-tonal'}>
+              {category == ''
+                ? 'Select Category'
+                : `${categoryEmoji} ${category}`}
+            </Button>
+          </View>
+          {bottomSheet()}
+          <View style={{flexDirection: 'row', marginTop: '3%'}}>
+            <View
+              style={{width: '48%', marginTop: '2%', marginHorizontal: '1%'}}>
+              {TextInputModified('Memo', false, true, false, note, setNote)}
             </View>
-
             <View
               style={{
-                flexWrap: 'wrap',
+                width: '48%',
+                marginTop: '2%',
+                marginLeft: '1%',
                 flexDirection: 'row',
-                alignSelf: 'center',
+                backgroundColor: 'white',
+                flex: 1,
+                borderWidth: 0.7,
+                borderColor: 'black',
+                borderRadius: 2,
+                height: 48,
+                paddingLeft: '1%',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}>
-              <Button
-                mode="contained-tonal"
-                style={{
-                  width: '48%',
-                  marginRight: '2%',
-                  backgroundColor: '#00B4D8',
-                }}
-                labelStyle={{color: 'white'}}>
-                Card 💳
-              </Button>
-              <Button
-                onPress={() => refRBSheet.current.open()}
-                style={{width: '48%', backgroundColor: '#00B4D8'}}
-                labelStyle={{color: 'white'}}
-                dark={false}
-                mode={'contained-tonal'}>
-                {category == ''
-                  ? 'Select Category'
-                  : `${categoryEmoji} ${category}`}
-              </Button>
-            </View>
-            {bottomSheet()}
-            <View style={{flexDirection: 'row', marginTop: '3%'}}>
               <TextInput
-                mode="outlined"
-                label="Memo"
-                theme={{color: {primary: colors.logoColor}}}
-                autoCapitalize="sentences"
-                style={{width: '48%', marginRight: '2%'}}
-                value={note}
-                onChangeText={note => setNote(note)}
-              />
-
-              <TextInput
-                mode="outlined"
-                label=""
-                placeholder={'Date'}
-                editable={false}
                 value={dateSelected}
-                style={{width: '48%', marginRight: '2%'}}
-                right={
-                  <TextInput.Icon
-                    icon="calendar"
-                  />
-                }
-              />
+                editable={false}
+                style={{color: 'black', fontSize: 16}}></TextInput>
+              <Button
+                icon={'calendar'}
+                style={{padding: 0, marginLeft: 40}}
+                size={50}></Button>
             </View>
           </View>
           <Button
+            loading={loader}
             mode="contained"
             onPress={async () => {
+              setLoader(true);
               UploadDocs();
               await removeTxn();
               const trans = await findTxn('txn');
               props.setTrans(trans);
+              setLoader(false);
             }}
             style={{
               marginTop: '5%',
@@ -326,6 +332,11 @@ export default function AddExpense(props) {
             Add Expense
           </Button>
         </View>
+        <ActivityIndicator
+          style={{marginTop: 10}}
+          size={'small'}
+          hidesWhenStopped={true}
+          animating={backLoader}></ActivityIndicator>
       </KeyboardAwareScrollView>
     </Provider>
   );

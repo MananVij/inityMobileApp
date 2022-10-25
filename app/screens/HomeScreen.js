@@ -430,6 +430,7 @@ export default function HomeScreen({navigation}, props) {
         }}>
         <ScrollView
           bounces={false}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }>

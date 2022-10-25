@@ -13,7 +13,6 @@ import {
   Button,
   Provider,
   Text,
-  TextInput,
   Portal,
   Paragraph,
   Dialog,
@@ -31,6 +30,7 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {signOut} from 'firebase/auth';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {storeDataLocally} from '../functions/localStorage';
+import TextInputModified from '../components/TextInputModified';
 
 function LoginScreen({navigation}) {
   const [name, setName] = useState('');
@@ -182,49 +182,9 @@ function LoginScreen({navigation}) {
               marginBottom: '15%',
             }}></Image>
           <Text style={styles.heading}>Sign up</Text>
-
-          <TextInput
-            theme={{
-              colors: {primary: colors.logoColor},
-            }}
-            style={{
-              marginVertical: '0.5%',
-              backgroundColor: 'white',
-              borderColor: 'black',
-            }}
-            mode="outlined"
-            label={'Name'}
-            placeholderTextColor={'black'}
-            value={name}
-            onChangeText={name => setName(name)}></TextInput>
-          <TextInput
-            theme={{
-              colors: {primary: colors.logoColor},
-            }}
-            style={{
-              marginVertical: '0.5%',
-              backgroundColor: 'white',
-              borderColor: 'black',
-            }}
-            mode="outlined"
-            label={'Email'}
-            value={email}
-            onChangeText={email => setEmail(email)}></TextInput>
-          <TextInput
-            theme={{
-              colors: {primary: colors.logoColor},
-            }}
-            style={{
-              marginVertical: '0.5%',
-              marginBottom: '8%',
-              backgroundColor: 'white',
-              borderColor: 'black',
-            }}
-            mode="outlined"
-            label={'Password'}
-            secureTextEntry={true}
-            value={password}
-            onChangeText={password => setPassword(password)}></TextInput>
+          {TextInputModified('Name', false, false, name, setName)}
+          {TextInputModified('Email', false, false, email, setEmail)}
+          {TextInputModified('Password', true, false, password, setPassword)}
           <Button
             mode="contained"
             style={styles.button}
@@ -237,19 +197,6 @@ function LoginScreen({navigation}) {
             }}>
             Sign Up
           </Button>
-          {/* <Button
-            mode="elevated"
-            style={styles.googleButton}
-            // labelStyle={styles.buttonText}
-            labelStyle={{fontSize: 15, fontWeight: '600', color: '#757575'}}
-            loading={googleLoader}
-            onPress={async () => {
-              setGoogleLoader(true);
-              await googleSignup();
-              setGoogleLoader(false);
-            }}>
-            Sign Up With Google
-          </Button> */}
           <TouchableOpacity
             style={styles.googleButton}
             activeOpacity={0.6}

@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 apply plugin: 'com.google.gms.google-services'
+apply plugin:  'com.google.firebase.crashlytics'
 import com.android.build.OutputFile
 import org.apache.tools.ant.taskdefs.condition.Os
 
@@ -139,8 +140,8 @@ android {
         applicationId "com.inity"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "1.0.0"
+        versionCode 9
+        versionName "1.1.0"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
         if (isNewArchitectureEnabled()) {
@@ -303,7 +304,15 @@ dependencies {
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
-        implementation 'com.facebook.fresco:animated-gif:2.5.0'
+    implementation 'com.facebook.fresco:animated-gif:2.5.0'
+
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:31.0.1')
+
+    // Add the dependencies for the Crashlytics and Analytics libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-crashlytics'
+    implementation 'com.google.firebase:firebase-analytics'
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
         exclude group:'com.facebook.fbjni'

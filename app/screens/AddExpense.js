@@ -5,17 +5,17 @@ import {
   ScrollView,
   Alert,
   ToastAndroid,
+  TextInput,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import React, {useState, useRef} from 'react';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import Moment from 'react-moment';
 import colors from '../config/colors';
 import moment from 'moment';
 import {addExpense, addCategory, getUserData} from '../../API/firebaseMethods';
 import RBSheet from 'react-native-raw-bottom-sheet';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 import {useRoute} from '@react-navigation/native';
 import {
@@ -23,16 +23,16 @@ import {
   Portal,
   Dialog,
   Paragraph,
-  TextInput,
   Provider,
   Text,
 } from 'react-native-paper';
+import TextInputModified from '../components/TextInputModified';
 
 export default function AddExpense() {
   const showToast = msg => {
     ToastAndroid.show(msg, ToastAndroid.SHORT);
   };
-  const navigation = useNavigation()
+  const navigation = useNavigation();
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const refRBSheet = useRef();
@@ -58,7 +58,6 @@ export default function AddExpense() {
   };
   const cancelDatePicker = () => {
     setDatePickerVisibility(false);
-    setDateSelected('');
   };
 
   const handleConfirm = date => {
@@ -85,7 +84,7 @@ export default function AddExpense() {
       try {
         addExpense(route?.params.userData, expenseData);
         showToast('Expense Added');
-        navigation.navigate('HomeScreen', {userData: route?.params.userData}) 
+        navigation.navigate('HomeScreen', {userData: route?.params.userData});
       } catch (e) {
         console.log('error in uploading document: ', e);
         showToast('Some Error Occured. Please try again!');
@@ -217,114 +216,107 @@ export default function AddExpense() {
         </View>
         {addCategoryDialog()}
         <View bounces={false}>
-          {/* <View style={{}}> */}
-            <View
+          <View
+            style={{
+              flexWrap: 'wrap',
+              alignSelf: 'center',
+              marginTop: 50,
+              marginBottom: 60,
+              flexDirection: 'row',
+            }}>
+            <Text style={{fontSize: 60, color: 'black'}}>₹</Text>
+            <TextInput
+              placeholder="0"
+              numberOfLines={1}
+              maxLength={6}
+              keyboardType="numeric"
               style={{
                 flexWrap: 'wrap',
-                alignSelf: 'center',
-                borderBottomWidth: 2,
-                marginTop: 50,
-                marginBottom: 60,
+                textDecorationLine: 'underline',
+                borderBottomWidth: 1,
+                fontSize: 75,
+                height: 100,
+                textDecorationColor: 'black',
+                fontWeight: '500',
                 flexDirection: 'row',
-              }}>
-              <Text style={{fontSize: 60}}>₹</Text>
-              <TextInput
-                mode="outlined"
-                placeholder="0"
-                keyboardType="numeric"
-                outlineColor="transparent"
-                activeOutlineColor="transparent"
-                style={{
-                  flexWrap: 'wrap',
-                  backgroundColor: 'transparent',
-                  fontSize: 75,
-                  height: 75,
-                  textDecorationLine: 'underline',
-                  textDecorationColor: 'black',
-                  fontWeight: '500',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                }}
-                value={amount}
-                onChangeText={amount => {
-                  setAmount(Number(amount));
-                }}
-              />
+                justifyContent: 'center',
+                color: 'black',
+              }}
+              value={amount}
+              onChangeText={amount => {
+                setAmount(Number(amount));
+              }}></TextInput>
+          </View>
+          <View
+            style={{
+              flexWrap: 'wrap',
+              flexDirection: 'row',
+              alignSelf: 'center',
+            }}>
+            <Button
+              mode="contained-tonal"
+              style={{
+                width: '48%',
+                marginRight: '2%',
+                backgroundColor: '#00B4D8',
+              }}
+              labelStyle={{color: 'white'}}>
+              Cash 💸
+            </Button>
+            <Button
+              onPress={() => refRBSheet.current.open()}
+              style={{width: '48%', backgroundColor: '#00B4D8'}}
+              labelStyle={{color: 'white'}}
+              dark={false}
+              mode={'contained-tonal'}>
+              {category == ''
+                ? 'Select Category'
+                : `${categoryEmoji} ${category}`}
+            </Button>
+          </View>
+          {bottomSheet()}
+          <View style={{flexDirection: 'row', marginTop: '3%'}}>
+            <View
+              style={{width: '48%', marginTop: '2%', marginHorizontal: '1%'}}>
+              {TextInputModified('Memo', false, true, false, note, setNote)}
             </View>
             <View
               style={{
-                flexWrap: 'wrap',
+                width: '48%',
+                marginTop: '2%',
+                marginLeft: '1%',
                 flexDirection: 'row',
-                alignSelf: 'center',
+                backgroundColor: 'white',
+                flex: 1,
+                borderWidth: 0.7,
+                borderColor: 'black',
+                borderRadius: 2,
+                height: 48,
+                paddingLeft: '1%',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}>
-              <Button
-                mode="contained-tonal"
-                style={{
-                  width: '48%',
-                  marginRight: '2%',
-                  backgroundColor: '#00B4D8',
-                }}
-                labelStyle={{color: 'white'}}>
-                Cash 💸
-              </Button>
-              <Button
-                onPress={() => refRBSheet.current.open()}
-                style={{width: '48%', backgroundColor: '#00B4D8'}}
-                labelStyle={{color: 'white'}}
-                dark={false}
-                mode={'contained-tonal'}>
-                {category == ''
-                  ? 'Select Category'
-                  : `${categoryEmoji} ${category}`}
-              </Button>
-            </View>
-            {bottomSheet()}
-            <View style={{flexDirection: 'row', marginTop: '3%'}}>
               <TextInput
-                mode="outlined"
-                label="Memo"
-                theme={{colors: {primary: colors.logoColor}}}
-                autoCapitalize="sentences"
-                style={{
-                  width: '48%',
-                  marginRight: '2%',
-                  backgroundColor: 'white',
-                }}
-                value={note}
-                onChangeText={note => setNote(note)}
-              />
-
-              <TextInput
-                mode="outlined"
-                label=""
-                placeholder={'Date'}
-                editable={false}
                 value={dateSelected}
-                outlineColor={'black'}
-                style={{
-                  width: '48%',
-                  marginRight: '2%',
-                  backgroundColor: 'white',
-                }}
-                defaultValue={'1233'}
-                right={
-                  <TextInput.Icon
-                    icon="calendar"
-                    onPress={() => {
-                      showDatePicker();
-                    }}
-                  />
-                }
-              />
-              <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                maximumDate={new Date()}
-                onConfirm={handleConfirm}
-                onCancel={cancelDatePicker}
-              />
+                editable={false}
+                style={{color: 'black', fontSize: 16}}></TextInput>
+              <Button
+                icon={'calendar'}
+                style={{padding: 0, marginLeft: 40}}
+                size={50}
+                onPress={() => {
+                  showDatePicker();
+                }}></Button>
             </View>
-          {/* </View> */}
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              mode="date"
+              date={new Date()}
+              maximumDate={new Date()}
+              onConfirm={handleConfirm}
+              onCancel={cancelDatePicker}
+            />
+          </View>
           <Button
             labelStyle={{color: 'white'}}
             mode="contained"
