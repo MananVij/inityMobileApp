@@ -182,9 +182,9 @@ function LoginScreen({navigation}) {
               marginBottom: '15%',
             }}></Image>
           <Text style={styles.heading}>Sign up</Text>
-          {TextInputModified('Name', false, false, name, setName)}
-          {TextInputModified('Email', false, false, email, setEmail)}
-          {TextInputModified('Password', true, false, password, setPassword)}
+          {TextInputModified('Name', false, true, name, setName)}
+          {TextInputModified('Email', false, true, email, setEmail)}
+          {TextInputModified('Password', true, true, password, setPassword)}
           <Button
             mode="contained"
             style={styles.button}

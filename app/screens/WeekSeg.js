@@ -8,6 +8,21 @@ import GoogleAd from '../components/GoogleAd';
 import {CONSTANTS} from '@firebase/util';
 
 export default function WeekSeg() {
+  const d = new Date();
+  const monthNames = [
+    'jan',
+    'feb',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'aug',
+    'sept',
+    'oct',
+    'nov',
+    'dec',
+  ];
   const [expenses, setExpenses] = useState([]);
   const route = useRoute();
 
@@ -109,8 +124,7 @@ export default function WeekSeg() {
         <Swiper
           showsButtons={false}
           loop={false}
-          paginationStyle={{bottom: 10}}
-        >
+          paginationStyle={{bottom: 10}}>
           <ScrollView showsVerticalScrollIndicator={false}>
             {expenses[0]?.length != 0 ? (
               expenses[0]?.map(el => {
@@ -158,7 +172,17 @@ export default function WeekSeg() {
                   }}></Image>
                 <Text
                   style={{
-                    marginTop: '25%',
+                    fontWeight: '700',
+                    fontSize: 22,
+                    alignSelf: 'center',
+                    marginBottom: '5%',
+                    marginTop: '10%',
+                  }}>
+                  {monthNames[d.getMonth()].charAt(0).toUpperCase() +
+                    monthNames[d.getMonth()].slice(1)}
+                </Text>
+                <Text
+                  style={{
                     fontSize: 23,
                     fontWeight: '700',
                     alignSelf: 'center',
@@ -216,7 +240,17 @@ export default function WeekSeg() {
                   }}></Image>
                 <Text
                   style={{
-                    marginTop: '25%',
+                    fontWeight: '700',
+                    fontSize: 22,
+                    alignSelf: 'center',
+                    marginBottom: '5%',
+                    marginTop: '10%',
+                  }}>
+                  {monthNames[d.getMonth()-1].charAt(0).toUpperCase() +
+                    monthNames[d.getMonth()-1].slice(1)}
+                </Text>
+                <Text
+                  style={{
                     fontSize: 23,
                     fontWeight: '700',
                     alignSelf: 'center',

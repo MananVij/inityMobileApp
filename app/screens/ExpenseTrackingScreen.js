@@ -252,7 +252,6 @@ const ExpenseTrackingScreen = props => {
                   width: width * 0.25,
                   textAlign: 'right',
                 }}>
-                {/* {' '} */}
                 {((Object.values(item) / totalExpense[monthIdx]) * 100).toFixed(
                   2,
                 ) == 100
@@ -340,9 +339,14 @@ const ExpenseTrackingScreen = props => {
                       height: 300,
                       resizeMode: 'contain',
                     }}></Image>
+                  <View style={{marginTop: '10%'}}>
+                    <Text style={styles.monthName}>
+                      {monthNames[d.getMonth()].charAt(0).toUpperCase() +
+                        monthNames[d.getMonth()].slice(1)}
+                    </Text>
+                  </View>
                   <Text
                     style={{
-                      marginTop: '25%',
                       fontSize: 23,
                       fontWeight: '700',
                       alignSelf: 'center',
@@ -414,9 +418,14 @@ const ExpenseTrackingScreen = props => {
                       height: 300,
                       resizeMode: 'contain',
                     }}></Image>
+                  <View style={{marginTop: '10%'}}>
+                    <Text style={styles.monthName}>
+                      {monthNames[d.getMonth() - 1].charAt(0).toUpperCase() +
+                        monthNames[d.getMonth() - 1].slice(1)}
+                    </Text>
+                  </View>
                   <Text
                     style={{
-                      marginTop: '25%',
                       fontSize: 23,
                       fontWeight: '700',
                       alignSelf: 'center',

@@ -42,14 +42,9 @@ import SplashScreen from './app/screens/SplashScreen';
 import {findTxn, retrieveData, storeTxn} from './app/functions/localStorage';
 
 export default function App() {
-  const pushNotification = data => {
-    return data;
-  };
 
   const [userData, setUserData] = useState([]);
   const [isOnline, setIsOnline] = useState();
-  const [sms, setSms] = useState([]);
-  const [date, setDate] = useState('');
   const [amount, setAmount] = useState('');
   const [user, setUser] = useState();
   const [loading, setLoading] = useState(true);
@@ -76,14 +71,24 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS).then(
-      res => {
-        if (res) {
-          BackgroundService.start(veryIntensiveTask, options);
-        }
-      },
-    );
-  }, []);
+    (async() => {
+      PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS).then(
+        async res => {
+          if (userData?.length && res) {
+            await BackgroundService.start(veryIntensiveTask, options);
+          }
+        },
+      );
+    })()
+  }, [userData]);
+
+  useEffect(() => {
+    (async () => {
+      if(userData?.length == 0) {
+        await BackgroundService.stop();
+      }
+    })()
+  },[userData])
 
   const setUserDataFxn = async () => {
     const localData = await retrieveData('userData');

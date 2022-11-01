@@ -6,11 +6,10 @@ export default function TextInputModified(
   placeholderValue,
   passwordValue,
   editableValue,
-  autoFocusValue,
   state,
   setState,
 ) {
-  const [focused, setFocused] = useState(autoFocusValue);
+  const [focused, setFocused] = useState(false);
   return (
     <View>
       <TextInput
@@ -36,7 +35,6 @@ export default function TextInputModified(
         onChangeText={state => {
           setState(state);
         }}
-        autoFocus={autoFocusValue}
         placeholderTextColor={'black'}></TextInput>
     </View>
   );

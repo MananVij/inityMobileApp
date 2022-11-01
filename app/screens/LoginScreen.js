@@ -198,7 +198,7 @@ function LoginScreen({navigation}) {
             }}></Image>
           <Text style={styles.heading}>Login</Text>
           {TextInputModified('Email', false, true, email, setEmail)}
-          {TextInputModified('Password', true, false, password, setPassword)}
+          {TextInputModified('Password', true, true, password, setPassword)}
           <TouchableOpacity
             onPress={() => {
               navigation.navigate('ResetPasswordScreen');

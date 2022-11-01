@@ -6,29 +6,25 @@ import {
   Alert,
   ToastAndroid,
   TextInput,
+  useWindowDimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import React, {useState, useRef} from 'react';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import Moment from 'react-moment';
 import colors from '../config/colors';
 import moment from 'moment';
-import {addExpense, addCategory, getUserData} from '../../API/firebaseMethods';
+import {addExpense} from '../../API/firebaseMethods';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import {useNavigation} from '@react-navigation/native';
 
 import {useRoute} from '@react-navigation/native';
-import {
-  Button,
-  Portal,
-  Dialog,
-  Paragraph,
-  Provider,
-  Text,
-} from 'react-native-paper';
+import {Button, Provider, Text} from 'react-native-paper';
 import TextInputModified from '../components/TextInputModified';
+import DialogBox from '../components/DialogBox';
 
 export default function AddExpense() {
+  const {height, width} = useWindowDimensions();
+
   const showToast = msg => {
     ToastAndroid.show(msg, ToastAndroid.SHORT);
   };
@@ -70,8 +66,6 @@ export default function AddExpense() {
       Alert.alert('Please enter amount of expense.');
     } else if (!dateSelected) {
       Alert.alert('Please enter date of expense.');
-    } else if (!note) {
-      Alert.alert('Please add a note to your expense.');
     } else if (!category) {
       Alert.alert('Please select category of expense.');
     } else {
@@ -79,7 +73,7 @@ export default function AddExpense() {
         amount: amount,
         date: dateSelected,
         category: category,
-        type: note,
+        type: note == undefined ? '' : note,
       };
       try {
         addExpense(route?.params.userData, expenseData);
@@ -92,10 +86,6 @@ export default function AddExpense() {
     }
   };
   const [visible, setVisible] = useState(false);
-
-  const showDialog = () => setVisible(true);
-
-  const hideDialog = () => setVisible(false);
 
   const categoryButton = (categoryName, categoryEmoji, index) => {
     return (
@@ -111,45 +101,6 @@ export default function AddExpense() {
           {categoryEmoji + ' ' + categoryName}
         </Button>
       </View>
-    );
-  };
-
-  const addCategoryDialog = () => {
-    return (
-      <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
-          <Dialog.Content>
-            <Paragraph>Add New Category</Paragraph>
-            <TextInput
-              label={'Name'}
-              mode="outlined"
-              value={newCategoryName}
-              onChangeText={categoryName =>
-                setNewCategoryName(categoryName)
-              }></TextInput>
-            <TextInput
-              label={'Emoji'}
-              mode="outlined"
-              value={newCategoryEmoji}
-              onChangeText={categoryEmoji =>
-                setNewCategoryEmoji(categoryEmoji)
-              }></TextInput>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button
-              onPress={() => {
-                addCategory(
-                  route.params.userData,
-                  newCategoryName,
-                  newCategoryEmoji,
-                );
-                hideDialog();
-              }}>
-              Done
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
     );
   };
 
@@ -189,7 +140,7 @@ export default function AddExpense() {
               style={styles.categoryButton}
               onPress={() => {
                 refRBSheet.current.close();
-                showDialog();
+                setVisible(true);
               }}>
               Add Category
             </Button>
@@ -214,7 +165,14 @@ export default function AddExpense() {
             Expense
           </Text>
         </View>
-        {addCategoryDialog()}
+        {DialogBox(
+          route?.params.userData,
+          visible,
+          newCategoryName,
+          newCategoryEmoji,
+          setNewCategoryName,
+          setNewCategoryEmoji,
+        )}
         <View bounces={false}>
           <View
             style={{
@@ -235,7 +193,7 @@ export default function AddExpense() {
                 textDecorationLine: 'underline',
                 borderBottomWidth: 1,
                 fontSize: 75,
-                height: 100,
+                height: height * 0.13,
                 textDecorationColor: 'black',
                 fontWeight: '500',
                 flexDirection: 'row',
@@ -278,7 +236,7 @@ export default function AddExpense() {
           <View style={{flexDirection: 'row', marginTop: '3%'}}>
             <View
               style={{width: '48%', marginTop: '2%', marginHorizontal: '1%'}}>
-              {TextInputModified('Memo', false, true, false, note, setNote)}
+              {TextInputModified('Memo', false, true, note, setNote)}
             </View>
             <View
               style={{
@@ -302,7 +260,7 @@ export default function AddExpense() {
                 style={{color: 'black', fontSize: 16}}></TextInput>
               <Button
                 icon={'calendar'}
-                style={{padding: 0, marginLeft: 40}}
+                style={{padding: 0, marginLeft: width * 0.055}}
                 size={50}
                 onPress={() => {
                   showDatePicker();
@@ -311,7 +269,6 @@ export default function AddExpense() {
             <DateTimePickerModal
               isVisible={isDatePickerVisible}
               mode="date"
-              date={new Date()}
               maximumDate={new Date()}
               onConfirm={handleConfirm}
               onCancel={cancelDatePicker}

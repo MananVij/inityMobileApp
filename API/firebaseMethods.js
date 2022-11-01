@@ -93,7 +93,7 @@ export const createSignupDoc = async user => {
       Food: '🍕',
       Grocery: '🥑',
       Gym: '🏋🏻‍♂️',
-      Healhcare: '💊',
+      Healthcare: '💊',
       Insurence: '💰',
       Investments: '📈',
       Miscelleneous: '🤷‍♂️',

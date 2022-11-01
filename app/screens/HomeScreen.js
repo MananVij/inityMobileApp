@@ -304,7 +304,7 @@ export default function HomeScreen({navigation}, props) {
                 paddingRight: '4%',
                 color: chartColor,
               }}>
-              {Math.abs(changePercentage).toFixed(2)}%
+              {Math.abs(changePercentage).toFixed(2) == Infinity ? '100.00' : Math.abs(changePercentage).toFixed(2)}%
             </Text>
           </View>
           <View style={{flexDirection: 'row', justifyContent: 'center'}}>

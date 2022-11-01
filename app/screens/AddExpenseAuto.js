@@ -6,26 +6,23 @@ import {
   ToastAndroid,
   BackHandler,
   TextInput,
+  useWindowDimensions,
 } from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
 import moment from 'moment';
-import {addExpense, addCategory} from '../../API/firebaseMethods';
+import {addExpense} from '../../API/firebaseMethods';
 import RBSheet from 'react-native-raw-bottom-sheet';
-import {
-  Button,
-  Portal,
-  Dialog,
-  Paragraph,
-  Provider,
-  Text,
-  ActivityIndicator,
-} from 'react-native-paper';
+import {Button, Provider, Text, ActivityIndicator} from 'react-native-paper';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {findTxn, removeTxn} from '../functions/localStorage';
 import {getAmount} from '../functions/getAmount';
 import TextInputModified from '../components/TextInputModified';
+import DialogBox from '../components/DialogBox';
+import colors from '../config/colors';
 
 export default function AddExpense(props) {
+  const {height, width} = useWindowDimensions();
+
   const showToast = toastMsg => {
     ToastAndroid.show(toastMsg, ToastAndroid.SHORT);
   };
@@ -89,8 +86,6 @@ export default function AddExpense(props) {
       Alert.alert('Please enter amount of expense.');
     } else if (!dateSelected) {
       Alert.alert('Please enter date of expense.');
-    } else if (!note) {
-      Alert.alert('Please add a note to your expense.');
     } else if (!category) {
       Alert.alert('Please select category of expense.');
     } else {
@@ -98,7 +93,7 @@ export default function AddExpense(props) {
         amount: amount,
         date: dateSelected,
         category: category,
-        type: note,
+        type: note == undefined ? '' : note,
       };
       try {
         addExpense(props.userData, expenseData);
@@ -111,8 +106,6 @@ export default function AddExpense(props) {
   };
 
   const showDialog = () => setVisible(true);
-
-  const hideDialog = () => setVisible(false);
 
   const categoryButton = (categoryName, categoryEmoji, index) => {
     return (
@@ -127,41 +120,6 @@ export default function AddExpense(props) {
         }}>
         {categoryEmoji + ' ' + categoryName}
       </Button>
-    );
-  };
-
-  const addCategoryDialog = () => {
-    return (
-      <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
-          <Dialog.Content>
-            <Paragraph>Add New Category</Paragraph>
-            <TextInput
-              label={'Name'}
-              mode="outlined"
-              value={newCategoryName}
-              onChangeText={categoryName =>
-                setNewCategoryName(categoryName)
-              }></TextInput>
-            <TextInput
-              label={'Emoji'}
-              mode="outlined"
-              value={newCategoryEmoji}
-              onChangeText={categoryEmoji =>
-                setNewCategoryEmoji(categoryEmoji)
-              }></TextInput>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button
-              onPress={() => {
-                addCategory(props.userData, newCategoryName, newCategoryEmoji);
-                hideDialog();
-              }}>
-              Done
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
     );
   };
 
@@ -227,7 +185,14 @@ export default function AddExpense(props) {
             Expense
           </Text>
         </View>
-        {addCategoryDialog()}
+        {DialogBox(
+          props?.userData,
+          visible,
+          newCategoryName,
+          newCategoryEmoji,
+          setNewCategoryName,
+          setNewCategoryEmoji,
+        )}
         <View bounces={false}>
           <View
             style={{
@@ -247,7 +212,7 @@ export default function AddExpense(props) {
                 flexWrap: 'wrap',
                 borderBottomWidth: 1,
                 fontSize: 75,
-                height: 100,
+                height: height * 0.13,
                 fontWeight: '500',
                 flexDirection: 'row',
                 justifyContent: 'center',
@@ -287,7 +252,7 @@ export default function AddExpense(props) {
           <View style={{flexDirection: 'row', marginTop: '3%'}}>
             <View
               style={{width: '48%', marginTop: '2%', marginHorizontal: '1%'}}>
-              {TextInputModified('Memo', false, true, false, note, setNote)}
+              {TextInputModified('Memo', false, true, note, setNote)}
             </View>
             <View
               style={{
@@ -311,7 +276,7 @@ export default function AddExpense(props) {
                 style={{color: 'black', fontSize: 16}}></TextInput>
               <Button
                 icon={'calendar'}
-                style={{padding: 0, marginLeft: 40}}
+                style={{padding: 0, marginLeft: width * 0.055}}
                 size={50}></Button>
             </View>
           </View>
@@ -326,8 +291,10 @@ export default function AddExpense(props) {
               props.setTrans(trans);
               setLoader(false);
             }}
+            labelStyle={{color: 'white'}}
             style={{
               marginTop: '5%',
+              backgroundColor: colors.logoColor,
             }}>
             Add Expense
           </Button>
