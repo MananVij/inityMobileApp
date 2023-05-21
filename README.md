@@ -61,15 +61,6 @@ Install my-project with npm
 ![Logo](https://firebasestorage.googleapis.com/v0/b/inity-ac018.appspot.com/o/logo%2FUntitled%20design.png?alt=media&token=f9a09357-1622-45b6-bb6f-afbcd0fa75a6)
 
 
-## Deployment
-
-To deploy this project run
-
-```bash
-  npm run deploy
-```
-
-
 ## Demo
 The project is deployed on Google PlayStore
 https://play.google.com/store/apps/details?id=com.inity
